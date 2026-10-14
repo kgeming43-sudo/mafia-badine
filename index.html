@@ -24,7 +24,7 @@ button.secondary{background:#2a1b24;border:1px solid #573343}
 button.music-btn{background:#8e44ad;border:1px solid #9b59b6}
 button:disabled{opacity:.5}
 .hidden{display:none!important}
-.pin{font-size:32px;letter-spacing:6px;color:#ff6b81;text-align:center;font-weight:bold}
+.pin{font-size:36px;letter-spacing:6px;color:#ff6b81;text-align:center;font-weight:bold}
 .player{padding:12px;background:#1e141b;border-radius:10px;margin:7px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #36222d}
 
 .role-card-container{perspective:1000px;width:100%;height:180px;margin:15px 0;cursor:pointer}
@@ -32,7 +32,7 @@ button:disabled{opacity:.5}
 .role-card-inner.flipped{transform:rotateY(180deg)}
 .role-front, .role-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;box-shadow:inset 0 0 20px rgba(0,0,0,0.8)}
 .role-front{background:linear-gradient(135deg, #1f0c13, #0d0609);color:#ff4757;font-size:20px;border:2px dashed #ff4757}
-.role-back{background:linear-gradient(135deg, #2b0c15, #120307);color:#fff;transform:rotateY(180deg);font-size:22px;font-weight:bold;border:2px solid #ff4757;text-shadow:0 0 8px rgba(255,71,87,0.6)}
+.role-back{background:linear-gradient(135deg, #2b0c15, #120307);color:#fff;transform:rotateY(180deg);font-size:24px;font-weight:bold;border:2px solid #ff4757;text-shadow:0 0 8px rgba(255,71,87,0.6)}
 
 .small{font-size:13px;color:#9a8894}
 #message{color:#ff4757;font-weight:bold;text-align:center;margin-top:10px;}
@@ -56,7 +56,7 @@ button:disabled{opacity:.5}
 <input id="name" maxlength="20" placeholder="ناڤێ تە یێ یاریێ">
 <button id="create-btn">دروستکرنا ژوورەکێ نوو</button>
 <hr style="border-color:#3d1b26">
-<input id="pinInput" maxlength="6" inputmode="numeric" placeholder="کۆدێ ژوورێ PIN">
+<input id="pinInput" maxlength="2" inputmode="numeric" placeholder="کۆدێ ژوورێ (٢ ژمارە)">
 <button id="join-btn" class="secondary">چوونا ژوورێ</button>
 <p id="message"></p>
 </section>
@@ -97,19 +97,24 @@ button:disabled{opacity:.5}
 <h3 style="color:#c084fc; margin:0 0 5px 0;" id="nightActionTitle">🌙 چالاکیا ڕۆلێ تە</h3>
 <p class="small" id="nightActionDesc">کەسێ مەبەست هەلبژێرە:</p>
 <select id="nightTargetSelect"></select>
-<button style="margin-top:10px; background:#7e22ce;" onclick="submitNightAction()">تۆمارکرنا بڕیارا شەڤێ 🔒</button>
+<button id="submitNightActionBtn" style="margin-top:10px; background:#7e22ce;" onclick="submitNightAction()">تۆمارکرنا بڕیارا شەڤێ 🔒</button>
 <div id="nightActionStatus" class="small" style="color:#4ade80; margin-top:8px; font-weight:bold; background:#1e1b4b; padding:8px; border-radius:6px; display:none;"></div>
 </div>
 </div>
 
 <!-- Host Control & Secret Night Logs Panel -->
 <div id="hostGameControls" class="hidden" style="margin-top:15px; border-top:1px solid #3d1b26; padding-top:10px;">
-<h3 style="color:#ffa502; margin:5px 0;">👑 کۆنترۆلا سەرۆکی و نهێنیێن شەڤێ</h3>
-<p class="small">تە وەک سەرۆک چ ڕۆل نینە، بەلکو نهێنیێن شەڤێ ل ڤێرە ب تەواوی بۆ تە دیار دبن:</p>
+<h3 style="color:#ffa502; margin:5px 0;">👑 کۆنترۆلا سەرۆکی و دەرکردنا یاریزانان</h3>
+<p class="small">تە وەک سەرۆک چ ڕۆل نینە، بەلکو چالاکیێن شەڤێ و بەڕێوەبرنا یاریێ ل ڤێرە دبینە:</p>
 
 <div class="host-secret-panel">
 <h4 style="color:#ff4757; margin:0 0 8px 0;">📋 تۆمار و چاڤدێریا سەرۆکی (شەڤ):</h4>
 <div id="hostSecretLogs" class="small" style="line-height:1.8; color:#f3e8ff;">هێشتا چ چالاکیەک نەهاتیە کرن.</div>
+</div>
+
+<div class="host-secret-panel" style="margin-top:10px; border-color:#ef4444;">
+<h4 style="color:#ef4444; margin:0 0 8px 0;">🚫 دەرئێخستن و دیرخستنا یاریزانان:</h4>
+<div id="hostKickList" class="small">هێشتا چ یاریزان نینن.</div>
 </div>
 
 <button id="nextPhaseBtn" class="secondary" style="margin-top:10px;">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
@@ -125,7 +130,7 @@ button:disabled{opacity:.5}
 <div id="actions" class="hidden" style="margin-top:15px;">
 <h3 style="color:#ffa502;">🗳️ دەنگدانا ڕۆژێ (ئاشکرا)</h3>
 
-<!-- Judge Panel (Visible only to Judge during Day) -->
+<!-- Judge Panel -->
 <div id="judgeArea" class="judge-panel hidden">
 <h3 style="color:#eab308; margin:0 0 5px 0;">⚖️ بڕیارا دادوەری (Judge)</h3>
 <p class="small">تو وەک دادوەر دشیێ بڕیارێ سەر دەرئێخستن یان هەڵوەشاندنا بڕیارێ بدە:</p>
@@ -264,7 +269,7 @@ button:disabled{opacity:.5}
       if (!name) { msg("سەرەتا ناڤێ خۆ بنڤیسە."); return; }
       
       me.name = name;
-      room = String(Math.floor(100000 + Math.random() * 900000));
+      room = String(Math.floor(10 + Math.random() * 90));
       isHost = true;
 
       const roomRef = ref(db, 'rooms/' + room);
@@ -288,7 +293,7 @@ button:disabled{opacity:.5}
       playSound('click');
       const name = document.getElementById("name").value.trim();
       const pin = document.getElementById("pinInput").value.trim();
-      if (!name || pin.length !== 6) { msg("ناڤ و کۆدێ ٦ ژمارەیی بنڤیسە."); return; }
+      if (!name || pin.length !== 2) { msg("ناڤ و کۆدێ ٢ ژمارەیی بنڤیسە."); return; }
 
       me.name = name;
       room = pin;
@@ -334,11 +339,19 @@ button:disabled{opacity:.5}
 
           document.getElementById("count").textContent = `${playerList.length} یاریزان`;
           let html = '';
+          let kickHtml = '';
           playerList.forEach(id => {
               let isRoomHost = (id === data.host);
               html += `<div class="player">👤 ${escapeHtml(players[id].name)} ${isRoomHost ? '<small style="color:#ffa502">(سەرۆک)</small>' : ''}</div>`;
+              
+              if (isHost && !isRoomHost) {
+                  kickHtml += `<div class="player"><span>${escapeHtml(players[id].name)}</span> <button style="width:auto; padding:4px 10px; background:#dc2626;" onclick="kickPlayer('${id}')">دیرخستن ❌</button></div>`;
+              }
           });
           document.getElementById("players").innerHTML = html;
+          if (isHost) {
+              document.getElementById("hostKickList").innerHTML = kickHtml || "چ یاریزان نینن بۆ دەرکردنێ.";
+          }
 
           if (isHost) {
               document.getElementById("hostControls").classList.remove("hidden");
@@ -371,7 +384,7 @@ button:disabled{opacity:.5}
                   const nightDesc = document.getElementById("nightActionDesc");
                   const targetSelect = document.getElementById("nightTargetSelect");
 
-                  if (me.role === "سەرۆکێ مافیا" || me.role === "مافیێ سادە" || me.role === "مافیێ فێلباز" || me.role === "نوژدارێ هاولاتیا" || me.role === "نوژدارێ مافیا" || me.role === "پولیس" || me.role === "شاە کوژ") {
+                  if (me.role === "سەرۆکێ مافیا" || me.role === "مافیێ سادە" || me.role === "مافیێ فێلباز" || me.role === "نوژدارێ هاولاتیا" || me.role === "نوژدارێ مافیا" || me.role === "پولیس" || me.role === "شاە کوژ" || me.role === "ڤەکولەر") {
                       nightArea.classList.remove("hidden");
                       nightTitle.textContent = `🌙 چالاکیا ڕۆلێ تە: ${me.role}`;
                       
@@ -383,12 +396,14 @@ button:disabled{opacity:.5}
                           nightDesc.textContent = "کەسێ دڤێ پشکنی هەلبژێرە:";
                       } else if (me.role === "شاە کوژ") {
                           nightDesc.textContent = "کەسێ دڤێ شەڤێ بکۆژی هەلبژێرە:";
+                      } else if (me.role === "ڤەکولەر") {
+                          nightDesc.textContent = "کەسێ هەلبژێرە بۆ ئاشکراکرنا ڕۆلێ وی لە ڤێ شەڤێدا:";
                       }
 
                       let selHtml = "";
                       playerList.forEach(id => {
                           if (id !== me.id && id !== data.host) {
-                              selHtml += `<option value="${escapeHtml(players[id].name)}">${escapeHtml(players[id].name)}</option>`;
+                              selHtml += `<option value="${id}">${escapeHtml(players[id].name)}</option>`;
                           }
                       });
                       targetSelect.innerHTML = selHtml;
@@ -402,14 +417,12 @@ button:disabled{opacity:.5}
               document.getElementById("phaseTitle").textContent = isDay ? "☀️ ڕۆژ (دەنگدانا ئاشکرا)" : "🌙 شەڤا تاریک (چالاکیێن شەڤێ)";
               document.getElementById("actions").classList.toggle("hidden", !isDay);
 
-              // Judge Controls in Day Phase
               if (isDay && me.role === "دادوەر") {
                   document.getElementById("judgeArea").classList.remove("hidden");
               } else {
                   document.getElementById("judgeArea").classList.add("hidden");
               }
 
-              // Display Judge Public Decision if available
               if (isDay && data.judgeDecision) {
                   document.getElementById("judgePublicResult").classList.remove("hidden");
                   document.getElementById("judgePublicText").textContent = data.judgeDecision;
@@ -426,7 +439,7 @@ button:disabled{opacity:.5}
                   } else {
                       keys.forEach(k => {
                           let act = nActions[k];
-                          logHtml += `• <b>${escapeHtml(act.actorName)}</b> (${escapeHtml(act.role)}) هدف ژ هەلبژارت: <b>${escapeHtml(act.target)}</b><br>`;
+                          logHtml += `• <b>${escapeHtml(act.actorName)}</b> (${escapeHtml(act.role)}) هدف ژ هەلبژارت: <b>${escapeHtml(act.targetName)}</b><br>`;
                       });
                   }
                   document.getElementById("hostSecretLogs").innerHTML = logHtml;
@@ -473,6 +486,13 @@ button:disabled{opacity:.5}
       });
   };
 
+  window.kickPlayer = function(playerId) {
+      playSound('click');
+      if (confirm("تە دڤێت ئەڤ یاریزانە ژ ژوورێ دەرخەی؟")) {
+          remove(ref(db, `rooms/${room}/players/${playerId}`));
+      }
+  };
+
   document.getElementById("copy-btn").addEventListener("click", () => {
       playSound('click');
       if (navigator.clipboard) navigator.clipboard.writeText(room);
@@ -508,15 +528,28 @@ button:disabled{opacity:.5}
 
   window.submitNightAction = function() {
       playSound('click');
-      const target = document.getElementById("nightTargetSelect").value;
-      set(ref(db, `rooms/${room}/nightActions/${me.id}`), {
-          actorName: me.name,
-          role: me.role,
-          target: target
-      }).then(() => {
-          const statusDiv = document.getElementById("nightActionStatus");
-          statusDiv.style.display = "block";
-          statusDiv.textContent = `✅ بڕیارا تە هاتە تۆمارکرن: هدفێ تە (${target}) ب سەرکەفتن بۆ سەرۆکی هاتیە هناردن!`;
+      const targetId = document.getElementById("nightTargetSelect").value;
+      
+      get(ref(db, `rooms/${room}/players/${targetId}`)).then((snapshot) => {
+          const targetPlayer = snapshot.val();
+          const targetName = targetPlayer ? targetPlayer.name : "نەنیاس";
+          const targetRole = targetPlayer ? targetPlayer.role : "نەنیاس";
+
+          set(ref(db, `rooms/${room}/nightActions/${me.id}`), {
+              actorName: me.name,
+              role: me.role,
+              targetName: targetName
+          }).then(() => {
+              const statusDiv = document.getElementById("nightActionStatus");
+              statusDiv.style.display = "block";
+
+              if (me.role === "ڤەکولەر") {
+                  statusDiv.style.background = "#065f46";
+                  statusDiv.textContent = `🔍 ئەنجامێ ڤەکۆلینێ: ڕۆلێ ڕاستەقینە یێ (${targetName}) ئەڤەیە: [ ${targetRole} ]`;
+              } else {
+                  statusDiv.textContent = `✅ بڕیارا تە هاتە تۆمارکرن: هدفێ تە (${targetName}) ب سەرکەفتن بۆ سەرۆکی هاتیە هناردن!`;
+              }
+          });
       });
   };
 
