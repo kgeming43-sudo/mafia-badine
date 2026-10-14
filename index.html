@@ -40,7 +40,6 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
 <section id="sec-home" class="card">
   <h2>چوونا ژوورێ</h2>
   <input id="in-name" maxlength="15" placeholder="ناڤێ یاریێ">
-  <input id="in-pass" type="password" maxlength="6" placeholder="پاسوورد / ڕەقەمێ سەری">
   <input id="in-pin" maxlength="2" inputmode="numeric" placeholder="کۆدێ ژوورێ (٢ ژمارە)" style="margin-top:14px">
   <button id="btn-join" class="sec">داخوازییا چوونا ژوورێ</button>
   <p id="msg" style="color:#f87171;font-weight:bold;text-align:center;margin-top:8px"></p>
@@ -48,7 +47,7 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
 
 <section id="sec-wait" class="card hidden" style="text-align:center;padding:30px 20px;">
   <h2>⏳ لە چاوەڕوانیا سەرۆکی دەڤە...</h2>
-  <p class="small" style="margin-top:10px">تکایە بوەستە تاوەکو سەرۆک ناڤێ تە پەسەند دکەت.</p>
+  <p class="small" style="margin-top:10px">تکایە بوەستە تاوەکو ئەدمین ناڤێ تە پەسەند دکەت.</p>
 </section>
 
 <section id="sec-lobby" class="card hidden">
@@ -79,10 +78,9 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
 
   <div id="day-box" class="hidden" style="margin-top:14px">
     <h3 style="color:#fbbf24;font-size:16px">🗳️ دەنگدانا ڕۆژێ</h3>
-    <div id="judge-box" class="card hidden" style="background:#1c170d;border-color:#eab308;padding:10px;text-align:center">
+    <div id="judge-public" class="card hidden" style="background:#1c170d;border-color:#eab308;padding:10px;text-align:center">
       <strong style="color:#eab308;font-size:14px">⚖️ بڕیارا دادوەری:</strong>
-      <button style="background:#dc2626;margin-top:6px" onclick="judgeAct('کوشتن / دەرئێخستن ❌')">پەسەندکرن 🔨</button>
-      <button style="background:#16a34a;margin-top:6px" onclick="judgeAct('هەڵوەشاندن 🕊️')">هەڵوەشاندن 🕊️</button>
+      <p id="judge-text" class="small" style="margin-top:4px">-</p>
     </div>
     <div id="vote-list" style="margin-top:8px"></div>
   </div>
@@ -102,31 +100,60 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
     projectId: "mafia-badine"
   }));
 
-  let room = null, me = { id: 'u_' + Math.random().toString(36).substr(2,5), name: '', pass: '', role: '', type: '' }, flipped = false;
+  let room = null, me = { id: 'u_' + Math.random().toString(36).substr(2,5), name: '', role: '', type: '' }, flipped = false;
+  let audioCtx = null;
+
+  function playClick() {
+    try {
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    } catch(e){}
+  }
+
+  function playRoleMusic(role) {
+    try {
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      
+      if(role.includes("مافیا")) { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, audioCtx.currentTime); }
+      else if(role.includes("نوژدار")) { osc.type = 'sine'; osc.frequency.setValueAtTime(440, audioCtx.currentTime); }
+      else if(role.includes("پولیس") || role.includes("ڤەکولەر")) { osc.type = 'triangle'; osc.frequency.setValueAtTime(300, audioCtx.currentTime); }
+      else { osc.type = 'sine'; osc.frequency.setValueAtTime(220, audioCtx.currentTime); }
+
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.6);
+    } catch(e){}
+  }
 
   function showSec(id) {
+    playClick();
     ["sec-home","sec-wait","sec-lobby","sec-game"].forEach(x => document.getElementById(x).classList.toggle("hidden", x !== id));
   }
 
   document.getElementById("btn-join").onclick = () => {
     let name = document.getElementById("in-name").value.trim();
-    let pass = document.getElementById("in-pass").value.trim();
     let pin = document.getElementById("in-pin").value.trim();
-    if(!name || !pass || pin.length !== 2) { alert("تکایە ناڤ، پاسوورد و کۆدێ ۲ ژمارەیی بنڤیسە!"); return; }
+    if(!name || pin.length !== 2) { alert("ناڤ و کۆدێ ۲ ژمارەیی بنڤیسە!"); return; }
     
     room = pin;
     get(ref(db, 'rooms/' + room)).then(snap => {
       if(snap.exists()) {
         let players = snap.val().players || {};
         let existingId = Object.keys(players).find(k => players[k].name === name);
-        if(existingId) {
-          if(players[existingId].pass !== pass) { alert("پاسووردا وی ناڤی هەڵەیە."); return; }
-          me.id = existingId;
-        }
-        me.name = name; me.pass = pass;
+        if(existingId) { me.id = existingId; }
+        me.name = name;
         
         set(ref(db, `rooms/${room}/players/${me.id}`), { 
-          name: me.name, pass: me.pass, role: players[me.id]?.role || '', type: players[me.id]?.type || '', approved: players[me.id]?.approved || false 
+          name: me.name, role: players[me.id]?.role || '', type: players[me.id]?.type || '', approved: players[me.id]?.approved || false 
         }).then(() => {
           showSec("sec-wait");
           listenRoom();
@@ -145,12 +172,17 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
       if(!players[me.id].approved) { showSec("sec-wait"); return; }
 
       let pKeys = Object.keys(players);
-      document.getElementById("list-players").innerHTML = pKeys.filter(k=>players[k].approved).map(k=>`<div class="player-row"><span>👤 ${players[k].name}</span></div>`).join("");
+      document.getElementById("list-players").innerHTML = pKeys.filter(k=>players[k].approved).map(k=>`<div class="player-row">👤 ${players[k].name}</div>`).join("");
 
       if(data.status === 'lobby') showSec("sec-lobby");
       else if(data.status === 'playing') {
         showSec("sec-game");
-        me.role = players[me.id].role; me.type = players[me.id].type;
+        let newRole = players[me.id].role;
+        if(me.role !== newRole && newRole) {
+          me.role = newRole;
+          playRoleMusic(newRole);
+        }
+        me.type = players[me.id].type;
         document.getElementById("card-role-back").textContent = me.role;
 
         if(me.type === 'مافیا') {
@@ -167,8 +199,13 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
         let isDay = (data.phase === "ڕۆژ");
         document.getElementById("phase-title").textContent = isDay ? "☀️ ڕۆژ (دەنگدان)" : "🌙 شەڤا تاریک";
         document.getElementById("day-box").classList.toggle("hidden", !isDay);
-        if(me.role === 'دادوەر' && isDay) document.getElementById("judge-box").classList.remove("hidden");
-        else document.getElementById("judge-box").classList.add("hidden");
+
+        if(data.judgeDecision) {
+          document.getElementById("judge-public").classList.remove("hidden");
+          document.getElementById("judge-text").textContent = data.judgeDecision;
+        } else {
+          document.getElementById("judge-public").classList.add("hidden");
+        }
 
         if(isDay) {
           document.getElementById("vote-list").innerHTML = pKeys.filter(k=>k!==me.id && k!==data.host && players[k].approved).map(k=>`<div class="player-row"><span>${players[k].name}</span> <button style="width:auto;padding:5px 10px" onclick="voteP('${players[k].name}')">دەنگدان</button></div>`).join("");
@@ -177,23 +214,23 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
     });
   }
 
-  window.flipCard = () => { flipped = !flipped; document.getElementById("card-inner").classList.toggle("flipped", flipped); };
-  window.voteP = (tName) => { set(ref(db, `rooms/${room}/votes/${me.id}`), { voter: me.name, target: tName }).then(()=>alert("دەنگ هاتە تۆمارکرن!")); };
-  window.judgeAct = (dec) => { set(ref(db, `rooms/${room}/judgeDecision`), dec).then(()=>alert("بڕیار هاتەدان!")); };
+  window.flipCard = () => { playClick(); flipped = !flipped; document.getElementById("card-inner").classList.toggle("flipped", flipped); };
+  window.voteP = (tName) => { playClick(); set(ref(db, `rooms/${room}/votes/${me.id}`), { voter: me.name, target: tName }).then(()=>alert("دەنگ هاتە تۆمارکرن!")); };
 
   document.getElementById("btn-night-act").onclick = () => {
+    playClick();
     let tId = document.getElementById("night-select").value;
     get(ref(db, `rooms/${room}/players/${tId}`)).then(snap => {
       let tP = snap.val();
       set(ref(db, `rooms/${room}/nightActions/${me.id}`), { actor: me.name, role: me.role, target: tP.name }).then(()=>{
         let res = document.getElementById("night-res");
         if(me.role === 'ڤەکولەر') res.textContent = `🔍 ڕۆلێ (${tP.name}): [ ${tP.role} ]`;
-        else res.textContent = `✅ بڕیار بۆ سەرۆکی هاتیە هناردن!`;
+        else res.textContent = `✅ بڕیار بۆ ئەدمینی هاتیە هناردن!`;
       });
     });
   };
 
-  document.getElementById("btn-exit").onclick = () => { remove(ref(db, `rooms/${room}/players/${me.id}`)); location.reload(); };
+  document.getElementById("btn-exit").onclick = () => { playClick(); remove(ref(db, `rooms/${room}/players/${me.id}`)); location.reload(); };
 </script>
 </body>
 </html>
