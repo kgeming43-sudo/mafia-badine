@@ -30,19 +30,18 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
 <header>
   <div style="font-size:40px">👑</div>
   <h1>پەنەلا ئەدمین</h1>
-  <p>تەنها بۆ سەرۆکێ ژوورێ</p>
+  <p>کۆنترۆلا تەواو یا سەرۆکی ژوورێ</p>
 </header>
 
 <section id="sec-home" class="card">
   <h2>دروستکرنا ژوورا نوو</h2>
-  <input id="in-name" maxlength="15" placeholder="ناڤێ سەرۆکی">
-  <input id="in-pass" type="password" maxlength="6" placeholder="پاسووردا سەرۆکی">
+  <input id="in-name" maxlength="15" placeholder="ناڤێ ئەدمینی">
   <button id="btn-create" style="margin-top:14px">دروستکرنا ژوورێ (٢ ژمارەیی)</button>
 </section>
 
 <section id="sec-lobby" class="card hidden">
   <h2>بەڕێوەبرنا ژوورێ</h2>
-  <p class="small">کۆدێ ژوورێ:</p>
+  <p class="small">کۆدێ ژوورێ بۆ بەلاڤکرنێ:</p>
   <div id="disp-pin" class="pin-code">--</div>
   <div id="host-approval-box" class="card hidden" style="background:#1a101f;border-color:#fbbf24;margin-top:12px">
     <strong style="color:#fbbf24;font-size:13px">⏳ داخوازیێن یاریزانان:</strong>
@@ -54,14 +53,28 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
 
 <section id="sec-game" class="card hidden">
   <h2 id="phase-title">کۆنترۆلا سەرۆکی 👑</h2>
+  
   <div class="log-box">
-    <strong style="color:#f87171">📋 نهێنیێن شەڤێ:</strong>
+    <strong style="color:#f87171">📋 نهێنیێن شەڤێ (چالاکیێن یاریزانا):</strong>
     <div id="host-logs" style="margin-top:6px">چ چالاکی نەهاتیە کرن.</div>
   </div>
+
+  <div class="log-box" style="border-color:#fbbf24;margin-top:10px">
+    <strong style="color:#fbbf24">🗳️ ئەنجامێن دەنگدانا ڕۆژێ:</strong>
+    <div id="vote-results" style="margin-top:6px">چ دەنگ نەهاتینە دان.</div>
+  </div>
+
+  <div class="card" style="background:#1c170d;border-color:#eab308;margin-top:10px;padding:12px">
+    <strong style="color:#eab308;font-size:14px">⚖️ بڕیارا دادوەری (بۆ هەمیان دیار دەبت):</strong>
+    <button style="background:#dc2626;margin-top:6px" onclick="judgeAct('کوشتن / دەرئێخستن ❌')">پەسەندکرنا دەرئێخستنێ 🔨</button>
+    <button style="background:#16a34a;margin-top:6px" onclick="judgeAct('هەڵوەشاندن / بێتاوان 🕊️')">هەڵوەشاندنا دەنگدانێ 🕊️</button>
+  </div>
+
   <div class="log-box" style="border-color:#ef4444;margin-top:10px">
-    <strong style="color:#ef4444">🚫 دەرئێخستنا یاریزانان:</strong>
+    <strong style="color:#ef4444">🚫 دەرئێخستن و دیرخستنا یاریزانان:</strong>
     <div id="host-kick-list" style="margin-top:6px"></div>
   </div>
+
   <button id="btn-phase" class="sec" style="margin-top:12px">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
   <button id="btn-exit" class="sec" style="margin-top:14px">داخستنا ژوورێ</button>
 </section>
@@ -83,20 +96,36 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
     ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], ["ڤەکولەر","هاولاتی"], ["هاولاتیێ بومبە","هاولاتی"], ["نوژدارێ هاولاتیا","هاولاتی"]
   ];
 
-  let room = null, me = { id: 'host_' + Math.random().toString(36).substr(2,5), name: '', pass: '' };
+  let room = null, me = { id: 'host_' + Math.random().toString(36).substr(2,5), name: '' };
+  let audioCtx = null;
 
-  function showSec(id) { ["sec-home","sec-lobby","sec-game"].forEach(x => document.getElementById(x).classList.toggle("hidden", x !== id)); }
+  function playClick() {
+    try {
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    } catch(e){}
+  }
+
+  function showSec(id) {
+    playClick();
+    ["sec-home","sec-lobby","sec-game"].forEach(x => document.getElementById(x).classList.toggle("hidden", x !== id));
+  }
 
   document.getElementById("btn-create").onclick = () => {
     let name = document.getElementById("in-name").value.trim();
-    let pass = document.getElementById("in-pass").value.trim();
-    if(!name || !pass) { alert("ناڤ و پاسوورد بنڤیسە!"); return; }
-    me.name = name; me.pass = pass;
+    if(!name) { alert("ناڤێ ئەدمینی بنڤیسە!"); return; }
+    me.name = name;
     room = String(Math.floor(10 + Math.random() * 90));
 
     set(ref(db, 'rooms/' + room), {
       host: me.id, status: 'lobby', phase: 'شەڤ',
-      players: { [me.id]: { name: me.name, pass: me.pass, role: 'سەرۆک', type: 'host', approved: true } }
+      players: { [me.id]: { name: me.name, role: 'سەرۆک', type: 'host', approved: true } }
     }).then(() => {
       showSec("sec-lobby");
       listenRoom();
@@ -134,19 +163,24 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
         showSec("sec-game");
         let acts = data.nightActions || {};
         document.getElementById("host-logs").innerHTML = Object.keys(acts).map(k=>`• <b>${acts[k].actor}</b> (${acts[k].role}) -> <b>${acts[k].target}</b>`).join("<br>") || "چ چالاکی نەهاتیە کرن.";
+
+        let votes = data.votes || {};
+        document.getElementById("vote-results").innerHTML = Object.keys(votes).map(k=>`• <b>${votes[k].voter}</b> دەنگ دا بۆ <b>${votes[k].target}</b>`).join("<br>") || "چ دەنگ نەهاتینە دان.";
       }
     });
   }
 
-  window.approveP = (pId) => { update(ref(db, `rooms/${room}/players/${pId}`), { approved: true }); };
-  window.kickP = (pId) => { remove(ref(db, `rooms/${room}/players/${pId}`)); };
+  window.approveP = (pId) => { playClick(); update(ref(db, `rooms/${room}/players/${pId}`), { approved: true }); };
+  window.kickP = (pId) => { playClick(); remove(ref(db, `rooms/${room}/players/${pId}`)); };
+  window.judgeAct = (dec) => { playClick(); set(ref(db, `rooms/${room}/judgeDecision`), dec).then(()=>alert("بڕیار بۆ هەمیان هاتە هناردن!")); };
 
   document.getElementById("btn-start").onclick = () => {
+    playClick();
     get(ref(db, 'rooms/' + room)).then(snap => {
       let players = snap.val().players;
       let pIds = Object.keys(players).filter(k => k !== snap.val().host && players[k].approved);
       let shuf = [...roles].sort(()=>Math.random()-0.5);
-      let up = { [`rooms/${room}/status`]: 'playing', [`rooms/${room}/phase`]: 'شەڤ', [`rooms/${room}/votes`]: null, [`rooms/${room}/nightActions`]: null };
+      let up = { [`rooms/${room}/status`]: 'playing', [`rooms/${room}/phase`]: 'شەڤ', [`rooms/${room}/votes`]: null, [`rooms/${room}/nightActions`]: null, [`rooms/${room}/judgeDecision`]: '' };
       pIds.forEach((id, idx) => {
         up[`rooms/${room}/players/${id}/role`] = shuf[idx % shuf.length][0];
         up[`rooms/${room}/players/${id}/type`] = shuf[idx % shuf.length][1];
@@ -156,13 +190,14 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
   };
 
   document.getElementById("btn-phase").onclick = () => {
+    playClick();
     get(ref(db, 'rooms/' + room + '/phase')).then(snap => {
       let next = snap.val() === "شەڤ" ? "ڕۆژ" : "شەڤ";
-      update(ref(db, 'rooms/' + room), { phase: next, votes: null, nightActions: null });
+      update(ref(db, `rooms/${room}`), { phase: next, votes: null, nightActions: null, judgeDecision: '' });
     });
   };
 
-  document.getElementById("btn-exit").onclick = () => { remove(ref(db, 'rooms/' + room)); location.reload(); };
+  document.getElementById("btn-exit").onclick = () => { playClick(); remove(ref(db, `rooms/${room}`)); location.reload(); };
 </script>
 </body>
 </html>
