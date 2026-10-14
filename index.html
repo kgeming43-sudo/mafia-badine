@@ -5,51 +5,55 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>یارییا مافیا بادینی</title>
 <style>
-:root{--red:#e63950;--bg:#0b090d;--panel:#19131a}
+:root{--red:#e63950;--bg:#070508;--panel:#151017}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at top,#35111d,var(--bg) 65%);color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:18px;transition:background 0.5s}
-body.day-phase{background:radial-gradient(ellipse at top,#1e3a8a,var(--bg) 65%)}
+body{margin:0;background:radial-gradient(ellipse at top,#2b0a13,var(--bg) 65%);color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:18px;transition:background 0.5s}
+body.day-phase{background:radial-gradient(ellipse at top,#0f1f38,var(--bg) 65%)}
 main{max-width:480px;margin:auto}
 header{text-align:center;padding:20px 0}
-.logo{font-size:48px}
-h1{color:#ff526b;margin:10px 0}
-p{color:#c9bbc4;line-height:1.7}
-.card{background:#19131a;border:1px solid #48212d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 10px 30px #0005}
-h2{font-size:19px}
-input,button,select{width:100%;padding:14px;border-radius:10px;margin:6px 0;font-size:16px}
-input,select{background:#0c0a0e;color:white;border:1px solid #59313d}
-button{border:0;background:var(--red);color:white;font-weight:bold;cursor:pointer;transition:transform 0.1s}
+.logo{font-size:50px}
+h1{color:#ff4757;margin:10px 0;text-shadow:0 0 10px rgba(255,71,87,0.4)}
+p{color:#b8a9b4;line-height:1.7}
+.card{background:var(--panel);border:1px solid #3d1b26;border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+h2{font-size:19px;color:#ffa502}
+input,button,select{width:100%;padding:14px;border-radius:12px;margin:6px 0;font-size:16px}
+input,select{background:#0b080e;color:white;border:1px solid #4a2532}
+button{border:0;background:var(--red);color:white;font-weight:bold;cursor:pointer;transition:transform 0.1s, background 0.2s}
 button:active{transform:scale(0.97)}
-button.secondary{background:#34232c;border:1px solid #69404b}
-button.police-btn{background:#1d4ed8;border:1px solid #3b82f6}
+button.secondary{background:#2a1b24;border:1px solid #573343}
+button.music-btn{background:#8e44ad;border:1px solid #9b59b6}
 button:disabled{opacity:.5}
 .hidden{display:none!important}
-.pin{font-size:30px;letter-spacing:5px;color:#ff6579;text-align:center;font-weight:bold}
-.player{padding:10px;background:#241922;border-radius:9px;margin:7px 0;display:flex;justify-content:space-between;align-items:center;}
-.role-card-container{perspective:1000px;width:100%;height:160px;margin:15px 0;cursor:pointer}
-.role-card-inner{position:relative;width:100%;height:100%;text-align:center;transition:transform 0.6s;transform-style:preserve-3d}
+.pin{font-size:32px;letter-spacing:6px;color:#ff6b81;text-align:center;font-weight:bold}
+.player{padding:12px;background:#1e141b;border-radius:10px;margin:7px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #36222d}
+
+/* Scary Horror Cards */
+.role-card-container{perspective:1000px;width:100%;height:180px;margin:15px 0;cursor:pointer}
+.role-card-inner{position:relative;width:100%;height:100%;text-align:center;transition:transform 0.7s;transform-style:preserve-3d}
 .role-card-inner.flipped{transform:rotateY(180deg)}
-.role-front, .role-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;border:1px solid #ff526b}
-.role-front{background:#241922;color:#ff526b;font-size:20px}
-.role-back{background:#19131a;color:#fff;transform:rotateY(180deg);font-size:22px;font-weight:bold}
-.small{font-size:13px;color:#a99aa4}
-#message{color:#ff526b;font-weight:bold;text-align:center;margin-top:10px;}
-.vote-item{display:flex;justify-content:space-between;align-items:center;background:#22161f;padding:10px;border-radius:8px;margin:6px 0}
+.role-front, .role-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;box-shadow:inset 0 0 20px rgba(0,0,0,0.8)}
+.role-front{background:linear-gradient(135deg, #1f0c13, #0d0609);color:#ff4757;font-size:20px;border:2px dashed #ff4757}
+.role-back{background:linear-gradient(135deg, #2b0c15, #120307);color:#fff;transform:rotateY(180deg);font-size:24px;font-weight:bold;border:2px solid #ff4757;text-shadow:0 0 8px rgba(255,71,87,0.6)}
+
+.small{font-size:13px;color:#9a8894}
+#message{color:#ff4757;font-weight:bold;text-align:center;margin-top:10px;}
+.vote-item{display:flex;justify-content:space-between;align-items:center;background:#1e141b;padding:10px;border-radius:10px;margin:6px 0;border:1px solid #36222d}
+.music-panel{background:#120c15;border:1px solid #4a225e;border-radius:14px;padding:14px;margin-top:15px;text-align:center;}
 </style>
 </head>
 <body>
 <main>
 <header>
-<div class="logo">🎭</div>
+<div class="logo">🎴</div>
 <h1>مافیا بادینی</h1>
-<p>ژوورێ ئۆنلاین • ڕۆلێن نهێنی • دەنگدانا ڕۆژێ</p>
+<p>ژوورا ترسناک • کارتێن تایبەت • سەرۆک کۆنترۆڵ</p>
 </header>
 
 <section id="home" class="card">
 <h2>ب خێرهاتی</h2>
-<input id="name" maxlength="20" placeholder="ناڤێ تە">
+<input id="name" maxlength="20" placeholder="ناڤێ تە یێ یاریێ">
 <button id="create-btn">دروستکرنا ژوورەکێ نوو</button>
-<hr style="border-color:#48212d">
+<hr style="border-color:#3d1b26">
 <input id="pinInput" maxlength="6" inputmode="numeric" placeholder="کۆدێ ژوورێ PIN">
 <button id="join-btn" class="secondary">چوونا ژوورێ</button>
 <p id="message"></p>
@@ -57,47 +61,51 @@ button:disabled{opacity:.5}
 
 <section id="lobby" class="card hidden">
 <h2>ژوورا مافیا</h2>
-<p>کۆدێ ژوورێ:</p>
+<p>کۆدێ ژوورێ بۆ بەلاڤکرنێ:</p>
 <div class="pin" id="pinDisplay"></div>
 <button id="copy-btn" class="secondary">کۆپی کرنا کۆدێ ژوورێ</button>
 <p id="count">٠ یاریزان</p>
 <div id="players"></div>
 <div id="hostControls" class="hidden">
-<button id="start-btn">دەستپێکرنا یاریێ</button>
+<button id="start-btn">دەستپێکرنا یاریێ ♠️</button>
 </div>
-<p class="small">سەرۆک دێ یاریێ دەست پێ کەت دەما هەمی هەڤال هاتنە ناڤ ژوورێ.</p>
+<p class="small">تەنها سەرۆک دشیێت یاریێ دەست پێ بکەت.</p>
 </section>
 
 <section id="game" class="card hidden">
-<h2 id="phaseTitle">شەڤ</h2>
-<p id="phaseInfo">کارتێ خۆ ڤەکە و ڕۆلێ خۆ ببینە.</p>
+<h2 id="phaseTitle">شەڤا تاریک</h2>
+<p id="phaseInfo">کارتێ خۆ هەلبژێرە و ڕۆلێ خۆ ب ترس ببینە.</p>
 
 <div class="role-card-container" onclick="revealRoleCard()">
 <div id="roleCardInner" class="role-card-inner">
-<div class="role-front"><span>🔒 کارتێ خۆ ڤەکە</span><span class="small" style="margin-top:8px">کلیک ل ڤێرێ بکە</span></div>
+<div class="role-front"><span>🎴 کارتێ ترسا خۆ ڤەکە</span><span class="small" style="margin-top:8px">کلیک ل ڤێرێ بکە</span></div>
 <div id="roleBack" class="role-back">ڕۆلێ تە</div>
 </div>
 </div>
 
-<div id="mafiaTeamBox" class="card hidden" style="background:#2a1117; border-color:#ef4444;">
-<h3 style="color:#ef4444; margin:0 0 8px 0;">👥 هەڤالێن مافیا:</h3>
+<div id="mafiaTeamBox" class="card hidden" style="background:#260910; border-color:#ff4757;">
+<h3 style="color:#ff4757; margin:0 0 8px 0;">👥 هەڤالێن مافیا (تیمی):</h3>
 <p id="mafiaTeamNames" class="small">-</p>
 </div>
 
-<div id="policeControls" class="hidden" style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
-<h3 style="color:#60a5fa; margin:5px 0;">🚔 دەسەڵاتێن پۆلیسی / سەرۆکی</h3>
-<button id="mute-all-btn" class="police-btn">بێدەنگکرنا یاریزانان 🔇</button>
-<button id="unmute-all-btn" class="police-btn" style="background:#2563eb; margin-top:5px;">ڤەکرنا ئاخفتنێ 🎙️</button>
+<!-- Host Control Panel for Horror Music & Phase -->
+<div id="hostGameControls" class="hidden" style="margin-top:15px; border-top:1px solid #3d1b26; padding-top:10px;">
+<h3 style="color:#ffa502; margin:5px 0;">👑 کۆنترۆلا سەرۆکی</h3>
+<button id="nextPhaseBtn" class="secondary">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
+<div class="music-panel">
+<h3 style="color:#9b59b6; margin:5px 0;">🎶 موزیکا ترسناک و حماس</h3>
+<button class="music-btn" id="startMusicBtn">لێدانا موزیکا مافیا ▶️</button>
+<button class="music-btn" style="background:#c0392b;" id="stopMusicBtn">راوەستاندنا موزیکێ ⏹️</button>
+</div>
 </div>
 
-<div id="actions" class="hidden">
-<h3 style="color:#f59e0b;">🗳️ دەنگدانا ڕۆژێ</h3>
-<p class="small">یاریزانەکێ هەلبژێرە بۆ ژناڤبرنێ یان دەرئێخستنێ:</p>
+<div id="actions" class="hidden" style="margin-top:15px;">
+<h3 style="color:#ffa502;">🗳️ دەنگدانا ڕۆژێ</h3>
+<p class="small">یاریزانەکێ گۆمانلێکری بۆ ژناڤبرنێ هەلبژێرە:</p>
 <div id="voteList"></div>
 </div>
 
-<button id="nextPhaseBtn" class="secondary hidden">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
-<button id="exit-btn" class="secondary">دەرکەفتن ژ ژوورێ</button>
+<button id="exit-btn" class="secondary" style="margin-top:15px;">دەرکەفتن ژ ژوورێ</button>
 </section>
 </main>
 
@@ -119,9 +127,10 @@ button:disabled{opacity:.5}
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
+  // Clean roles list without citizen group
   const rolesList = [
       ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["سەرۆکێ مافیا","مافیا"], 
-      ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], ["گروپێ هاولاتی","هاولاتی"], 
+      ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], 
       ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], 
       ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], 
       ["ڤەکولەر","هاولاتی"], ["هاولاتیێ بێ دەنک","هاولاتی"], ["هاولاتیێ بومبە","هاولاتی"], 
@@ -133,6 +142,7 @@ button:disabled{opacity:.5}
   let isHost = false;
   let isFlipped = false;
   let audioCtx = null;
+  let musicInterval = null;
 
   function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -144,18 +154,51 @@ button:disabled{opacity:.5}
           let osc = audioCtx.createOscillator();
           let gain = audioCtx.createGain();
           if (type === 'click') {
-              osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+              osc.frequency.setValueAtTime(500, audioCtx.currentTime);
           } else if (type === 'mafia') {
-              osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+              osc.frequency.setValueAtTime(110, audioCtx.currentTime);
               osc.type = 'sawtooth';
           }
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
           osc.connect(gain);
           gain.connect(audioCtx.destination);
           osc.start();
-          osc.stop(audioCtx.currentTime + 0.15);
+          osc.stop(audioCtx.currentTime + 0.2);
       } catch(e){}
+  }
+
+  // Horror / Suspense Background Music Generator via Web Audio API
+  function startHorrorMusic() {
+      stopHorrorMusic();
+      try {
+          initAudio();
+          musicInterval = setInterval(() => {
+              if (!audioCtx) return;
+              let osc = audioCtx.createOscillator();
+              let gain = audioCtx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 2.5);
+              
+              gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3);
+              
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.start();
+              osc.stop(audioCtx.currentTime + 3);
+          }, 3500);
+          alert("موزیکا ترسناک و حماس دەست پێ کر 🎶");
+      } catch(e){}
+  }
+
+  function stopHorrorMusic() {
+      if (musicInterval) {
+          clearInterval(musicInterval);
+          musicInterval = null;
+          alert("موزیک هاتیە راوەستاندن ⏹️");
+      }
   }
 
   function show(id) {
@@ -188,7 +231,7 @@ button:disabled{opacity:.5}
           host: me.id,
           status: 'lobby',
           phase: 'شەڤ',
-          globalMute: false,
+          musicPlaying: false,
           players: {
               [me.id]: { name: me.name, role: '', type: '' }
           }
@@ -237,7 +280,6 @@ button:disabled{opacity:.5}
           const players = data.players || {};
           const playerList = Object.keys(players);
 
-          // Check if user is still in room
           if (!players[me.id]) {
               alert("تو ژ ژوورێ هاتە دەرئێخستن!");
               location.reload();
@@ -248,13 +290,13 @@ button:disabled{opacity:.5}
           let html = '';
           playerList.forEach(id => {
               let isRoomHost = (id === data.host);
-              html += `<div class="player"><span>👤 ${escapeHtml(players[id].name)} ${isRoomHost ? '<small style="color:#ff6579">(سەرۆک)</small>' : ''}</span></div>`;
+              html += `<div class="player"><span>👤 ${escapeHtml(players[id].name)} ${isRoomHost ? '<small style="color:#ffa502">(سەرۆک)</small>' : ''}</span></div>`;
           });
           document.getElementById("players").innerHTML = html;
 
           if (isHost) {
               document.getElementById("hostControls").classList.remove("hidden");
-              document.getElementById("nextPhaseBtn").classList.remove("hidden");
+              document.getElementById("hostGameControls").classList.remove("hidden");
           }
 
           if (data.status === 'lobby') {
@@ -274,19 +316,13 @@ button:disabled{opacity:.5}
                       });
                       document.getElementById("mafiaTeamNames").textContent = mafiaNames.join(", ");
                   }
-
-                  if (me.role === "پولیس" || isHost) {
-                      document.getElementById("policeControls").classList.remove("hidden");
-                  }
               }
               
-              // Phase setup
               const isDay = data.phase === "ڕۆژ";
               document.body.classList.toggle("day-phase", isDay);
-              document.getElementById("phaseTitle").textContent = isDay ? "☀️ ڕۆژ (گەنگەشە و دەنگدان)" : "🌙 شەڤ (ڕۆلێن شەڤێ)";
+              document.getElementById("phaseTitle").textContent = isDay ? "☀️ ڕۆژ (گەنگەشە و دەنگدان)" : "🌙 شەڤا تاریک (ڕۆلێن شەڤێ)";
               document.getElementById("actions").classList.toggle("hidden", !isDay);
 
-              // Render Voting list for Day phase
               if (isDay) {
                   let voteHtml = '';
                   playerList.forEach(id => {
@@ -337,18 +373,8 @@ button:disabled{opacity:.5}
 
   window.castVote = function(targetName) {
       playSound('click');
-      alert("تە دەنگ دا بۆ: " + targetName);
+      alert("تە دەنگ دا بۆ دەرئێخستنا: " + targetName);
   };
-
-  document.getElementById("mute-all-btn").addEventListener("click", () => {
-      playSound('click');
-      update(ref(db, 'rooms/' + room), { globalMute: true });
-  });
-
-  document.getElementById("unmute-all-btn").addEventListener("click", () => {
-      playSound('click');
-      update(ref(db, 'rooms/' + room), { globalMute: false });
-  });
 
   document.getElementById("nextPhaseBtn").addEventListener("click", () => {
       playSound('click');
@@ -357,6 +383,16 @@ button:disabled{opacity:.5}
           let next = current === "شەڤ" ? "ڕۆژ" : "شەڤ";
           update(ref(db, 'rooms/' + room), { phase: next });
       });
+  });
+
+  document.getElementById("startMusicBtn").addEventListener("click", () => {
+      playSound('click');
+      startHorrorMusic();
+  });
+
+  document.getElementById("stopMusicBtn").addEventListener("click", () => {
+      playSound('click');
+      stopHorrorMusic();
   });
 
   document.getElementById("exit-btn").addEventListener("click", () => {
