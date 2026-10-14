@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>پەنەلا ئەدمین - سەرۆکێ ژوورێ</title>
+<style>
+:root{--red:#ef4444;--bg:#09070c;--card:#18131e;--border:#372942}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
+body{background:radial-gradient(circle at top,#2a0813,var(--bg) 70%);color:#fff;min-height:100vh;padding:16px;display:flex;justify-content:center}
+main{width:100%;max-width:450px}
+header{text-align:center;margin-bottom:20px}
+header h1{color:#f87171;font-size:28px;margin-top:5px}
+header p{color:#a792b8;font-size:13px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 10px 25px rgba(0,0,0,0.5)}
+h2{font-size:18px;color:#fbbf24;margin-bottom:10px}
+input,button{width:100%;padding:12px 14px;border-radius:10px;font-size:15px;margin-top:8px}
+input{background:#0c0a10;color:#fff;border:1px solid var(--border);outline:none}
+button{background:var(--red);color:#fff;font-weight:bold;border:0;cursor:pointer}
+button.sec{background:#2a2035;border:1px solid #4a385c}
+.hidden{display:none!important}
+.pin-code{font-size:42px;font-weight:900;color:#f87171;text-align:center;letter-spacing:6px;margin:10px 0}
+.player-row{display:flex;justify-content:space-between;align-items:center;background:#231a2d;padding:10px 12px;border-radius:8px;margin-top:6px;border:1px solid #3d2d4e}
+.small{font-size:12px;color:#a792b8}
+.log-box{background:#100b16;border:1px dashed #fbbf24;padding:12px;border-radius:10px;font-size:13px;line-height:1.7;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div style="font-size:40px">👑</div>
+  <h1>پەنەلا ئەدمین</h1>
+  <p>تەنها بۆ سەرۆکێ ژوورێ</p>
+</header>
+
+<section id="sec-home" class="card">
+  <h2>دروستکرنا ژوورا نوو</h2>
+  <input id="in-name" maxlength="15" placeholder="ناڤێ سەرۆکی">
+  <input id="in-pass" type="password" maxlength="6" placeholder="پاسووردا سەرۆکی">
+  <button id="btn-create" style="margin-top:14px">دروستکرنا ژوورێ (٢ ژمارەیی)</button>
+</section>
+
+<section id="sec-lobby" class="card hidden">
+  <h2>بەڕێوەبرنا ژوورێ</h2>
+  <p class="small">کۆدێ ژوورێ:</p>
+  <div id="disp-pin" class="pin-code">--</div>
+  <div id="host-approval-box" class="card hidden" style="background:#1a101f;border-color:#fbbf24;margin-top:12px">
+    <strong style="color:#fbbf24;font-size:13px">⏳ داخوازیێن یاریزانان:</strong>
+    <div id="list-pending" style="margin-top:6px">چ داخوازی نینن.</div>
+  </div>
+  <div id="list-players" style="margin-top:10px"></div>
+  <button id="btn-start" style="margin-top:14px">دەستپێکرنا یاریێ ♠️</button>
+</section>
+
+<section id="sec-game" class="card hidden">
+  <h2 id="phase-title">کۆنترۆلا سەرۆکی 👑</h2>
+  <div class="log-box">
+    <strong style="color:#f87171">📋 نهێنیێن شەڤێ:</strong>
+    <div id="host-logs" style="margin-top:6px">چ چالاکی نەهاتیە کرن.</div>
+  </div>
+  <div class="log-box" style="border-color:#ef4444;margin-top:10px">
+    <strong style="color:#ef4444">🚫 دەرئێخستنا یاریزانان:</strong>
+    <div id="host-kick-list" style="margin-top:6px"></div>
+  </div>
+  <button id="btn-phase" class="sec" style="margin-top:12px">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
+  <button id="btn-exit" class="sec" style="margin-top:14px">داخستنا ژوورێ</button>
+</section>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+  const db = getDatabase(initializeApp({
+    apiKey: "AIzaSyApi9n_0mZM1-ErqnBZTkDignhe0jBo4ys",
+    authDomain: "mafia-badine.firebaseapp.com",
+    databaseURL: "https://mafia-badine-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "mafia-badine"
+  }));
+
+  const roles = [
+    ["سەرۆکێ مافیا","مافیا"], ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"],
+    ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], ["ڤەکولەر","هاولاتی"], ["هاولاتیێ بومبە","هاولاتی"], ["نوژدارێ هاولاتیا","هاولاتی"]
+  ];
+
+  let room = null, me = { id: 'host_' + Math.random().toString(36).substr(2,5), name: '', pass: '' };
+
+  function showSec(id) { ["sec-home","sec-lobby","sec-game"].forEach(x => document.getElementById(x).classList.toggle("hidden", x !== id)); }
+
+  document.getElementById("btn-create").onclick = () => {
+    let name = document.getElementById("in-name").value.trim();
+    let pass = document.getElementById("in-pass").value.trim();
+    if(!name || !pass) { alert("ناڤ و پاسوورد بنڤیسە!"); return; }
+    me.name = name; me.pass = pass;
+    room = String(Math.floor(10 + Math.random() * 90));
+
+    set(ref(db, 'rooms/' + room), {
+      host: me.id, status: 'lobby', phase: 'شەڤ',
+      players: { [me.id]: { name: me.name, pass: me.pass, role: 'سەرۆک', type: 'host', approved: true } }
+    }).then(() => {
+      showSec("sec-lobby");
+      listenRoom();
+    });
+  };
+
+  function listenRoom() {
+    document.getElementById("disp-pin").textContent = room;
+    onValue(ref(db, 'rooms/' + room), snap => {
+      let data = snap.val();
+      if(!data) { alert("ژوور هاتە داخستن!"); location.reload(); return; }
+      let players = data.players || {};
+      let pKeys = Object.keys(players);
+
+      let pListHtml = '', kickHtml = '', pendingHtml = '';
+      pKeys.forEach(k => {
+        let p = players[k];
+        let h = (k === data.host);
+        if(p.approved) {
+          pListHtml += `<div class="player-row"><span>👤 ${p.name} ${h?'(سەرۆک)':''}</span></div>`;
+          if(!h) kickHtml += `<div class="player-row"><span>${p.name}</span> <button style="width:auto;padding:4px 8px;background:#dc2626" onclick="kickP('${k}')">دیرخستن ❌</button></div>`;
+        } else {
+          pendingHtml += `<div class="player-row"><span>👤 ${p.name}</span> <div><button style="width:auto;padding:4px 8px;background:#16a34a" onclick="approveP('${k}')">قبوول ✅</button> <button style="width:auto;padding:4px 8px;background:#dc2626" onclick="kickP('${k}')">ڕەت ❌</button></div></div>`;
+        }
+      });
+
+      document.getElementById("list-players").innerHTML = pListHtml;
+      document.getElementById("host-kick-list").innerHTML = kickHtml || "چ یاریزان نینن.";
+      let pendBox = document.getElementById("host-approval-box");
+      if(pendingHtml) pendBox.classList.remove("hidden"); else pendBox.classList.add("hidden");
+      document.getElementById("list-pending").innerHTML = pendingHtml;
+
+      if(data.status === 'lobby') showSec("sec-lobby");
+      else if(data.status === 'playing') {
+        showSec("sec-game");
+        let acts = data.nightActions || {};
+        document.getElementById("host-logs").innerHTML = Object.keys(acts).map(k=>`• <b>${acts[k].actor}</b> (${acts[k].role}) -> <b>${acts[k].target}</b>`).join("<br>") || "چ چالاکی نەهاتیە کرن.";
+      }
+    });
+  }
+
+  window.approveP = (pId) => { update(ref(db, `rooms/${room}/players/${pId}`), { approved: true }); };
+  window.kickP = (pId) => { remove(ref(db, `rooms/${room}/players/${pId}`)); };
+
+  document.getElementById("btn-start").onclick = () => {
+    get(ref(db, 'rooms/' + room)).then(snap => {
+      let players = snap.val().players;
+      let pIds = Object.keys(players).filter(k => k !== snap.val().host && players[k].approved);
+      let shuf = [...roles].sort(()=>Math.random()-0.5);
+      let up = { [`rooms/${room}/status`]: 'playing', [`rooms/${room}/phase`]: 'شەڤ', [`rooms/${room}/votes`]: null, [`rooms/${room}/nightActions`]: null };
+      pIds.forEach((id, idx) => {
+        up[`rooms/${room}/players/${id}/role`] = shuf[idx % shuf.length][0];
+        up[`rooms/${room}/players/${id}/type`] = shuf[idx % shuf.length][1];
+      });
+      update(ref(db), up);
+    });
+  };
+
+  document.getElementById("btn-phase").onclick = () => {
+    get(ref(db, 'rooms/' + room + '/phase')).then(snap => {
+      let next = snap.val() === "شەڤ" ? "ڕۆژ" : "شەڤ";
+      update(ref(db, 'rooms/' + room), { phase: next, votes: null, nightActions: null });
+    });
+  };
+
+  document.getElementById("btn-exit").onclick = () => { remove(ref(db, 'rooms/' + room)); location.reload(); };
+</script>
+</body>
+</html>
