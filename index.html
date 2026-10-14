@@ -27,7 +27,6 @@ button:disabled{opacity:.5}
 .pin{font-size:32px;letter-spacing:6px;color:#ff6b81;text-align:center;font-weight:bold}
 .player{padding:12px;background:#1e141b;border-radius:10px;margin:7px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #36222d}
 
-/* Scary Horror Cards */
 .role-card-container{perspective:1000px;width:100%;height:180px;margin:15px 0;cursor:pointer}
 .role-card-inner{position:relative;width:100%;height:100%;text-align:center;transition:transform 0.7s;transform-style:preserve-3d}
 .role-card-inner.flipped{transform:rotateY(180deg)}
@@ -38,6 +37,7 @@ button:disabled{opacity:.5}
 .small{font-size:13px;color:#9a8894}
 #message{color:#ff4757;font-weight:bold;text-align:center;margin-top:10px;}
 .vote-item{display:flex;justify-content:space-between;align-items:center;background:#1e141b;padding:10px;border-radius:10px;margin:6px 0;border:1px solid #36222d}
+.vote-result-box{background:#110a12;border:1px dashed #ffa502;padding:10px;border-radius:8px;margin-top:10px;font-size:14px;color:#ffa502;}
 .music-panel{background:#120c15;border:1px solid #4a225e;border-radius:14px;padding:14px;margin-top:15px;text-align:center;}
 </style>
 </head>
@@ -46,7 +46,7 @@ button:disabled{opacity:.5}
 <header>
 <div class="logo">🎴</div>
 <h1>مافیا بادینی</h1>
-<p>ژوورا ترسناک • کارتێن تایبەت • سەرۆک کۆنترۆڵ</p>
+<p>ژوورا ترسناک • سەرۆک کۆنترۆڵ • دەنگدانا ئاشکرا</p>
 </header>
 
 <section id="home" class="card">
@@ -69,13 +69,14 @@ button:disabled{opacity:.5}
 <div id="hostControls" class="hidden">
 <button id="start-btn">دەستپێکرنا یاریێ ♠️</button>
 </div>
-<p class="small">تەنها سەرۆک دشیێت یاریێ دەست پێ بکەت.</p>
+<p class="small">تەنها سەرۆک دشیێت یاریێ دەست پێ بکەت و خۆ بڕێڤە دبت.</p>
 </section>
 
 <section id="game" class="card hidden">
 <h2 id="phaseTitle">شەڤا تاریک</h2>
-<p id="phaseInfo">کارتێ خۆ هەلبژێرە و ڕۆلێ خۆ ب ترس ببینە.</p>
+<p id="phaseInfo">کارتێ خۆ هەلبژێرە و ڕۆلێ خۆ ببینە.</p>
 
+<div id="playerGameArea">
 <div class="role-card-container" onclick="revealRoleCard()">
 <div id="roleCardInner" class="role-card-inner">
 <div class="role-front"><span>🎴 کارتێ ترسا خۆ ڤەکە</span><span class="small" style="margin-top:8px">کلیک ل ڤێرێ بکە</span></div>
@@ -87,10 +88,12 @@ button:disabled{opacity:.5}
 <h3 style="color:#ff4757; margin:0 0 8px 0;">👥 هەڤالێن مافیا (تیمی):</h3>
 <p id="mafiaTeamNames" class="small">-</p>
 </div>
+</div>
 
-<!-- Host Control Panel for Horror Music & Phase -->
+<!-- Host Control Panel -->
 <div id="hostGameControls" class="hidden" style="margin-top:15px; border-top:1px solid #3d1b26; padding-top:10px;">
-<h3 style="color:#ffa502; margin:5px 0;">👑 کۆنترۆلا سەرۆکی</h3>
+<h3 style="color:#ffa502; margin:5px 0;">👑 کۆنترۆلا سەرۆکی (بێ یاری)</h3>
+<p class="small">تە وەک سەرۆک ڕۆل نینە، تەنها یاریێ بڕێڤە دبە.</p>
 <button id="nextPhaseBtn" class="secondary">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
 <div class="music-panel">
 <h3 style="color:#9b59b6; margin:5px 0;">🎶 موزیکا ترسناک و حماس</h3>
@@ -100,9 +103,13 @@ button:disabled{opacity:.5}
 </div>
 
 <div id="actions" class="hidden" style="margin-top:15px;">
-<h3 style="color:#ffa502;">🗳️ دەنگدانا ڕۆژێ</h3>
+<h3 style="color:#ffa502;">🗳️ دەنگدانا ڕۆژێ (ئاشکرا)</h3>
 <p class="small">یاریزانەکێ گۆمانلێکری بۆ ژناڤبرنێ هەلبژێرە:</p>
 <div id="voteList"></div>
+<div id="voteResultsContainer" class="vote-result-box">
+<strong>ئەنجامێن دەنگدانا ڕاستەقینە:</strong>
+<div id="voteResultsList" style="margin-top:5px;" class="small">هێشتا چ دەنگ نەهاتینە دان.</div>
+</div>
 </div>
 
 <button id="exit-btn" class="secondary" style="margin-top:15px;">دەرکەفتن ژ ژوورێ</button>
@@ -127,7 +134,6 @@ button:disabled{opacity:.5}
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Clean roles list without citizen group
   const rolesList = [
       ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["سەرۆکێ مافیا","مافیا"], 
       ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], 
@@ -168,7 +174,6 @@ button:disabled{opacity:.5}
       } catch(e){}
   }
 
-  // Horror / Suspense Background Music Generator via Web Audio API
   function startHorrorMusic() {
       stopHorrorMusic();
       try {
@@ -189,7 +194,7 @@ button:disabled{opacity:.5}
               osc.start();
               osc.stop(audioCtx.currentTime + 3);
           }, 3500);
-          alert("موزیکا ترسناک و حماس دەست پێ کر 🎶");
+          alert("موزیکا ترسناک دەست پێ کر 🎶");
       } catch(e){}
   }
 
@@ -232,8 +237,9 @@ button:disabled{opacity:.5}
           status: 'lobby',
           phase: 'شەڤ',
           musicPlaying: false,
+          votes: {},
           players: {
-              [me.id]: { name: me.name, role: '', type: '' }
+              [me.id]: { name: me.name, role: 'سەرۆک (بڕێوەبەر)', type: 'host' }
           }
       }).then(() => {
           listenToRoom();
@@ -248,6 +254,7 @@ button:disabled{opacity:.5}
 
       me.name = name;
       room = pin;
+      isHost = false;
 
       const roomRef = ref(db, 'rooms/' + room);
       get(roomRef).then((snapshot) => {
@@ -277,6 +284,7 @@ button:disabled{opacity:.5}
               return;
           }
 
+          isHost = (data.host === me.id);
           const players = data.players || {};
           const playerList = Object.keys(players);
 
@@ -297,13 +305,16 @@ button:disabled{opacity:.5}
           if (isHost) {
               document.getElementById("hostControls").classList.remove("hidden");
               document.getElementById("hostGameControls").classList.remove("hidden");
+              document.getElementById("playerGameArea").classList.add("hidden"); // Host doesn't play
+          } else {
+              document.getElementById("playerGameArea").classList.remove("hidden");
           }
 
           if (data.status === 'lobby') {
               show("lobby");
           } else if (data.status === 'playing') {
               show("game");
-              if (players[me.id]) {
+              if (!isHost && players[me.id]) {
                   me.role = players[me.id].role;
                   me.type = players[me.id].type;
                   document.getElementById("roleBack").textContent = me.role;
@@ -320,23 +331,38 @@ button:disabled{opacity:.5}
               
               const isDay = data.phase === "ڕۆژ";
               document.body.classList.toggle("day-phase", isDay);
-              document.getElementById("phaseTitle").textContent = isDay ? "☀️ ڕۆژ (گەنگەشە و دەنگدان)" : "🌙 شەڤا تاریک (ڕۆلێن شەڤێ)";
+              document.getElementById("phaseTitle").textContent = isDay ? "☀️ ڕۆژ (دەنگدانا ئاشکرا)" : "🌙 شەڤا تاریک (ڕۆلێن شەڤێ)";
               document.getElementById("actions").classList.toggle("hidden", !isDay);
 
               if (isDay) {
                   let voteHtml = '';
                   playerList.forEach(id => {
-                      if (id !== me.id) {
-                          voteHtml += `<div class="vote-item"><span>${escapeHtml(players[id].name)}</span> <button style="width:auto; padding:6px 12px;" onclick="castVote('${players[id].name}')">دەنگدان</button></div>`;
+                      if (id !== me.id && id !== data.host) {
+                          voteHtml += `<div class="vote-item"><span>${escapeHtml(players[id].name)}</span> <button style="width:auto; padding:6px 12px;" onclick="castVote('${escapeHtml(players[id].name)}')">دەنگدان</button></div>`;
                       }
                   });
                   document.getElementById("voteList").innerHTML = voteHtml;
+
+                  // Render live votes results
+                  let votes = data.votes || {};
+                  let voteResHtml = "";
+                  let vKeys = Object.keys(votes);
+                  if (vKeys.length === 0) {
+                      voteResHtml = "هێشتا چ دەنگ نەهاتینە دان.";
+                  } else {
+                      vKeys.forEach(voterId => {
+                          let vObj = votes[voterId];
+                          voteResHtml += `• <b>${escapeHtml(vObj.voter)}</b> دەنگ دا بۆ <b>${escapeHtml(vObj.target)}</b><br>`;
+                      });
+                  }
+                  document.getElementById("voteResultsList").innerHTML = voteResHtml;
               }
           }
       });
   }
 
   window.revealRoleCard = function() {
+      if (isHost) return;
       playSound('click');
       isFlipped = !isFlipped;
       document.getElementById("roleCardInner").classList.toggle("flipped", isFlipped);
@@ -356,12 +382,16 @@ button:disabled{opacity:.5}
           const players = data.players;
           const playerIds = Object.keys(players);
 
+          // Filter out host from receiving roles
+          let playingIds = playerIds.filter(id => id !== data.host);
           let deck = shuffle([...rolesList]);
+
           let updates = {};
           updates[`rooms/${room}/status`] = 'playing';
           updates[`rooms/${room}/phase`] = 'شەڤ';
+          updates[`rooms/${room}/votes`] = null;
 
-          playerIds.forEach((id, index) => {
+          playingIds.forEach((id, index) => {
               let assigned = deck[index % deck.length];
               updates[`rooms/${room}/players/${id}/role`] = assigned[0];
               updates[`rooms/${room}/players/${id}/type`] = assigned[1];
@@ -373,15 +403,27 @@ button:disabled{opacity:.5}
 
   window.castVote = function(targetName) {
       playSound('click');
-      alert("تە دەنگ دا بۆ دەرئێخستنا: " + targetName);
+      // Save vote in Firebase
+      set(ref(db, `rooms/${room}/votes/${me.id}`), {
+          voter: me.name,
+          target: targetName
+      }).then(() => {
+          alert("دەنگێ تە ب سەرکەفتن هاتە تۆمارکرن بۆ: " + targetName);
+      });
   };
 
   document.getElementById("nextPhaseBtn").addEventListener("click", () => {
       playSound('click');
-      get(ref(db, 'rooms/' + room + '/phase')).then((snapshot) => {
-          let current = snapshot.val() || "شەڤ";
+      get(ref(db, 'rooms/' + room)).then((snapshot) => {
+          let data = snapshot.val();
+          let current = data.phase || "شەڤ";
           let next = current === "شەڤ" ? "ڕۆژ" : "شەڤ";
-          update(ref(db, 'rooms/' + room), { phase: next });
+          
+          let updates = { phase: next };
+          if (next === "شەڤ") {
+              updates["votes"] = null; // Clear votes when entering night
+          }
+          update(ref(db, 'rooms/' + room), updates);
       });
   });
 
