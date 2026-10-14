@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>یارییا مافیا بادینی</title>
+<title>یارییا مافیا بادینی - یاریزان</title>
 <style>
 :root{--red:#ef4444;--bg:#09070c;--card:#18131e;--border:#372942}
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -16,11 +16,9 @@ header p{color:#a792b8;font-size:13px}
 h2{font-size:18px;color:#fbbf24;margin-bottom:10px}
 input,select,button{width:100%;padding:12px 14px;border-radius:10px;font-size:15px;margin-top:8px}
 input,select{background:#0c0a10;color:#fff;border:1px solid var(--border);outline:none}
-button{background:var(--red);color:#fff;font-weight:bold;border:0;cursor:pointer;transition:transform 0.1s}
-button:active{transform:scale(0.98)}
+button{background:var(--red);color:#fff;font-weight:bold;border:0;cursor:pointer}
 button.sec{background:#2a2035;border:1px solid #4a385c}
 .hidden{display:none!important}
-.pin-code{font-size:42px;font-weight:900;color:#f87171;text-align:center;letter-spacing:6px;margin:10px 0}
 .player-row{display:flex;justify-content:space-between;align-items:center;background:#231a2d;padding:10px 12px;border-radius:8px;margin-top:6px;border:1px solid #3d2d4e}
 .card-flip{perspective:1000px;height:160px;margin:15px 0;cursor:pointer}
 .card-inner{position:relative;width:100%;height:100%;transition:transform 0.6s;transform-style:preserve-3d;text-align:center}
@@ -29,7 +27,6 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
 .front{background:#23121a;border:2px dashed #f87171;color:#f87171;font-size:18px}
 .back{background:#1e0a12;border:2px solid #f87171;color:#fff;font-size:22px;font-weight:bold;transform:rotateY(180deg)}
 .small{font-size:12px;color:#a792b8}
-.log-box{background:#100b16;border:1px dashed #fbbf24;padding:12px;border-radius:10px;font-size:13px;line-height:1.7;margin-top:8px}
 </style>
 </head>
 <body>
@@ -37,90 +34,57 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
 <header>
   <div style="font-size:40px">🎭</div>
   <h1>مافیا بادینی</h1>
-  <p>سیستەمێ نوو یێ ئۆنلاین • کۆدێ ٢ ژمارەیی</p>
+  <p>پەنەلا یاریزانی</p>
 </header>
 
-<!-- HOME -->
 <section id="sec-home" class="card">
-  <h2>ب خێرهاتی</h2>
-  <input id="in-name" maxlength="15" placeholder="ناڤێ تە یێ یاریێ">
-  <button id="btn-create">دروستکرنا ژوورا نوو (٢ ژمارەیی)</button>
-  <hr style="border-color:var(--border);margin:14px 0">
-  <input id="in-pin" maxlength="2" inputmode="numeric" placeholder="کۆدێ ژوورێ (تنێ ۲ ژمارە)">
-  <button id="btn-join" class="sec">چوونا ژوورێ</button>
+  <h2>چوونا ژوورێ</h2>
+  <input id="in-name" maxlength="15" placeholder="ناڤێ یاریێ">
+  <input id="in-pass" type="password" maxlength="6" placeholder="پاسوورد / ڕەقەمێ سەری">
+  <input id="in-pin" maxlength="2" inputmode="numeric" placeholder="کۆدێ ژوورێ (٢ ژمارە)" style="margin-top:14px">
+  <button id="btn-join" class="sec">داخوازییا چوونا ژوورێ</button>
   <p id="msg" style="color:#f87171;font-weight:bold;text-align:center;margin-top:8px"></p>
 </section>
 
-<!-- LOBBY -->
-<section id="sec-lobby" class="card hidden">
-  <h2>ژوورا مافیا</h2>
-  <p class="small">کۆدێ ژوورێ برایێن خۆ بدە:</p>
-  <div id="disp-pin" class="pin-code">--</div>
-  <p id="disp-count" class="small">٠ یاریزان</p>
-  <div id="list-players"></div>
-  <div id="host-start-box" class="hidden" style="margin-top:12px">
-    <button id="btn-start">دەستپێکرنا یاریێ ♠️</button>
-  </div>
+<section id="sec-wait" class="card hidden" style="text-align:center;padding:30px 20px;">
+  <h2>⏳ لە چاوەڕوانیا سەرۆکی دەڤە...</h2>
+  <p class="small" style="margin-top:10px">تکایە بوەستە تاوەکو سەرۆک ناڤێ تە پەسەند دکەت.</p>
 </section>
 
-<!-- GAME -->
+<section id="sec-lobby" class="card hidden">
+  <h2>ژوورا مافیا (چاوەڕوانیا دەستپێکرنێ)</h2>
+  <div id="list-players"></div>
+</section>
+
 <section id="sec-game" class="card hidden">
   <h2 id="phase-title">شەڤا تاریک 🌙</h2>
-
-  <!-- PLAYERS VIEW -->
-  <div id="view-player">
-    <div class="card-flip" onclick="flipCard()">
-      <div id="card-inner" class="card-inner">
-        <div class="front">🎴 کارتێ خۆ ڤەکە <span class="small" style="margin-top:5px">(کلیک بکە)</span></div>
-        <div id="card-role-back" class="back">ڕۆلێ تە</div>
-      </div>
-    </div>
-
-    <div id="mafia-team" class="card hidden" style="background:#260a12;border-color:#f87171;padding:10px">
-      <strong style="color:#f87171;font-size:13px">👥 تیمی مافیا:</strong>
-      <p id="mafia-names" class="small" style="color:#fff;margin-top:4px">-</p>
-    </div>
-
-    <div id="night-box" class="card hidden" style="background:#130d1d;border-color:#a855f7;padding:12px">
-      <strong style="color:#c084fc;font-size:14px" id="night-title">🌙 چالاکیا شەڤێ</strong>
-      <p class="small" id="night-desc">کەسەکێ هەلبژێرە:</p>
-      <select id="night-select"></select>
-      <button id="btn-night-act" style="background:#8b5cf6;margin-top:8px">تۆمارکرنا بڕیارێ 🔒</button>
-      <p id="night-res" class="small" style="color:#4ade80;margin-top:6px;font-weight:bold"></p>
+  <div class="card-flip" onclick="flipCard()">
+    <div id="card-inner" class="card-inner">
+      <div class="front">🎴 کارتێ خۆ ڤەکە <span class="small" style="margin-top:5px">(کلیک بکە)</span></div>
+      <div id="card-role-back" class="back">ڕۆلێ تە</div>
     </div>
   </div>
 
-  <!-- HOST VIEW -->
-  <div id="view-host" class="hidden">
-    <div class="log-box">
-      <strong style="color:#f87171">📋 نهێنیێن شەڤێ (تەنها بۆ سەرۆکی):</strong>
-      <div id="host-logs" style="margin-top:6px">چ چالاکی نەهاتیە کرن.</div>
-    </div>
-
-    <div class="log-box" style="border-color:#ef4444;margin-top:10px">
-      <strong style="color:#ef4444">🚫 دەرئێخستنا یاریزانان:</strong>
-      <div id="host-kick-list" style="margin-top:6px"></div>
-    </div>
-
-    <button id="btn-phase" class="sec" style="margin-top:12px">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
+  <div id="mafia-team" class="card hidden" style="background:#260a12;border-color:#f87171;padding:10px">
+    <strong style="color:#f87171;font-size:13px">👥 تیمی مافیا:</strong>
+    <p id="mafia-names" class="small" style="color:#fff;margin-top:4px">-</p>
   </div>
 
-  <!-- DAY ACTIONS -->
+  <div id="night-box" class="card hidden" style="background:#130d1d;border-color:#a855f7;padding:12px">
+    <strong style="color:#c084fc;font-size:14px" id="night-title">🌙 چالاکیا ڕۆلێ تە</strong>
+    <select id="night-select"></select>
+    <button id="btn-night-act" style="background:#8b5cf6;margin-top:8px">تۆمارکرنا بڕیارێ 🔒</button>
+    <p id="night-res" class="small" style="color:#4ade80;margin-top:6px;font-weight:bold"></p>
+  </div>
+
   <div id="day-box" class="hidden" style="margin-top:14px">
-    <h3 style="color:#fbbf24;font-size:16px">🗳️ دەنگدانا ڕۆژێ (ئاشکرا)</h3>
-    
+    <h3 style="color:#fbbf24;font-size:16px">🗳️ دەنگدانا ڕۆژێ</h3>
     <div id="judge-box" class="card hidden" style="background:#1c170d;border-color:#eab308;padding:10px;text-align:center">
       <strong style="color:#eab308;font-size:14px">⚖️ بڕیارا دادوەری:</strong>
-      <button style="background:#dc2626;margin-top:6px" onclick="judgeAct('کوشتن / دەرئێخستن ❌')">پەسەندکرنا دەرئێخستنێ 🔨</button>
-      <button style="background:#16a34a;margin-top:6px" onclick="judgeAct('هەڵوەشاندن / بێتاوان 🕊️')">هەڵوەشاندنا دەنگدانێ 🕊️</button>
+      <button style="background:#dc2626;margin-top:6px" onclick="judgeAct('کوشتن / دەرئێخستن ❌')">پەسەندکرن 🔨</button>
+      <button style="background:#16a34a;margin-top:6px" onclick="judgeAct('هەڵوەشاندن 🕊️')">هەڵوەشاندن 🕊️</button>
     </div>
-
     <div id="vote-list" style="margin-top:8px"></div>
-
-    <div class="log-box" style="margin-top:10px">
-      <strong>ئەنجامێن دەنگدانێ:</strong>
-      <div id="vote-results" class="small" style="margin-top:4px">چ دەنگ نەهاتینە دان.</div>
-    </div>
   </div>
 
   <button id="btn-exit" class="sec" style="margin-top:14px">دەرکەفتن ژ ژوورێ</button>
@@ -131,179 +95,105 @@ button.sec{background:#2a2035;border:1px solid #4a385c}
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
   import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
 
-  const firebaseConfig = {
+  const db = getDatabase(initializeApp({
     apiKey: "AIzaSyApi9n_0mZM1-ErqnBZTkDignhe0jBo4ys",
     authDomain: "mafia-badine.firebaseapp.com",
     databaseURL: "https://mafia-badine-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "mafia-badine",
-    storageBucket: "mafia-badine.firebasestorage.app",
-    messagingSenderId: "840454511215",
-    appId: "1:840454511215:web:d3b25381c58ac6f7128b9a"
-  };
+    projectId: "mafia-badine"
+  }));
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  const roles = [
-    ["سەرۆکێ مافیا","مافیا"], ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"],
-    ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], ["ڤەکولەر","هاولاتی"], ["هاولاتیێ بومبە","هاولاتی"], ["نوژدارێ هاولاتیا","هاولاتی"]
-  ];
-
-  let room = null, me = { id: 'u_' + Math.random().toString(36).substr(2,5), name: '', role: '', type: '' }, isHost = false, flipped = false;
+  let room = null, me = { id: 'u_' + Math.random().toString(36).substr(2,5), name: '', pass: '', role: '', type: '' }, flipped = false;
 
   function showSec(id) {
-    ["sec-home","sec-lobby","sec-game"].forEach(x => document.getElementById(x).classList.toggle("hidden", x !== id));
+    ["sec-home","sec-wait","sec-lobby","sec-game"].forEach(x => document.getElementById(x).classList.toggle("hidden", x !== id));
   }
-
-  document.getElementById("btn-create").onclick = () => {
-    let name = document.getElementById("in-name").value.trim();
-    if(!name) return alert("ناڤێ خۆ بنڤیسە!");
-    me.name = name; isHost = true;
-    room = String(Math.floor(10 + Math.random() * 90)); // Exactly 2 Digits PIN
-    set(ref(db, 'rooms/' + room), {
-      host: me.id, status: 'lobby', phase: 'شەڤ',
-      players: { [me.id]: { name: me.name, role: 'سەرۆک', type: 'host' } }
-    }).then(() => listenRoom());
-  };
 
   document.getElementById("btn-join").onclick = () => {
     let name = document.getElementById("in-name").value.trim();
+    let pass = document.getElementById("in-pass").value.trim();
     let pin = document.getElementById("in-pin").value.trim();
-    if(!name || pin.length !== 2) return alert("ناڤ و کۆدێ 2 ژمارەیی بنڤیسە!");
-    me.name = name; room = pin; isHost = false;
+    if(!name || !pass || pin.length !== 2) { alert("تکایە ناڤ، پاسوورد و کۆدێ ۲ ژمارەیی بنڤیسە!"); return; }
+    
+    room = pin;
     get(ref(db, 'rooms/' + room)).then(snap => {
       if(snap.exists()) {
-        set(ref(db, `rooms/${room}/players/${me.id}`), { name: me.name, role: '', type: '' }).then(() => listenRoom());
-      } else alert("ژوور نەهاتە دیتن!");
+        let players = snap.val().players || {};
+        let existingId = Object.keys(players).find(k => players[k].name === name);
+        if(existingId) {
+          if(players[existingId].pass !== pass) { alert("پاسووردا وی ناڤی هەڵەیە."); return; }
+          me.id = existingId;
+        }
+        me.name = name; me.pass = pass;
+        
+        set(ref(db, `rooms/${room}/players/${me.id}`), { 
+          name: me.name, pass: me.pass, role: players[me.id]?.role || '', type: players[me.id]?.type || '', approved: players[me.id]?.approved || false 
+        }).then(() => {
+          showSec("sec-wait");
+          listenRoom();
+        });
+      } else { alert("ژوور نەهاتە دیتن!"); }
     });
   };
 
   function listenRoom() {
-    document.getElementById("disp-pin").textContent = room;
     onValue(ref(db, 'rooms/' + room), snap => {
       let data = snap.val();
       if(!data) { alert("ژوور هاتە داخستن!"); location.reload(); return; }
-      isHost = (data.host === me.id);
       let players = data.players || {};
-      let pKeys = Object.keys(players);
-
       if(!players[me.id]) { alert("تۆ هاتە دەرئێخستن!"); location.reload(); return; }
 
-      document.getElementById("disp-count").textContent = `${pKeys.length} یاریزان`;
-      let pListHtml = '', kickHtml = '';
-      pKeys.forEach(k => {
-        let h = (k === data.host);
-        pListHtml += `<div class="player-row"><span>👤 ${players[k].name} ${h?'(سەرۆک)':''}</span></div>`;
-        if(isHost && !h) kickHtml += `<div class="player-row"><span>${players[k].name}</span> <button style="width:auto;padding:4px 8px" onclick="kickP('${k}')">دیرخستن ❌</button></div>`;
-      });
-      document.getElementById("list-players").innerHTML = pListHtml;
-      if(isHost) document.getElementById("host-kick-list").innerHTML = kickHtml || "چ یاریزان نینن.";
+      if(!players[me.id].approved) { showSec("sec-wait"); return; }
 
-      document.getElementById("host-start-box").classList.toggle("hidden", !isHost);
-      document.getElementById("view-host").classList.toggle("hidden", !isHost);
-      document.getElementById("view-player").classList.toggle("hidden", isHost);
+      let pKeys = Object.keys(players);
+      document.getElementById("list-players").innerHTML = pKeys.filter(k=>players[k].approved).map(k=>`<div class="player-row"><span>👤 ${players[k].name}</span></div>`).join("");
 
       if(data.status === 'lobby') showSec("sec-lobby");
       else if(data.status === 'playing') {
         showSec("sec-game");
-        if(!isHost && players[me.id]) {
-          me.role = players[me.id].role; me.type = players[me.id].type;
-          document.getElementById("card-role-back").textContent = me.role;
+        me.role = players[me.id].role; me.type = players[me.id].type;
+        document.getElementById("card-role-back").textContent = me.role;
 
-          if(me.type === 'مافیا') {
-            document.getElementById("mafia-team").classList.remove("hidden");
-            let mNames = Object.values(players).filter(p=>p.type==='مافیا').map(p=>p.name).join(", ");
-            document.getElementById("mafia-names").textContent = mNames;
-          }
-
-          let nBox = document.getElementById("night-box");
-          if(["سەرۆکێ مافیا","مافیێ سادە","مافیێ فێلباز","نوژدارێ هاولاتیا","نوژدارێ مافیا","پولیس","شاە کوژ","ڤەکولەر"].includes(me.role)) {
-            nBox.classList.remove("hidden");
-            let sel = document.getElementById("night-select");
-            sel.innerHTML = pKeys.filter(k=>k!==me.id && k!==data.host).map(k=>`<option value="${k}">${players[k].name}</option>`).join("");
-          } else nBox.classList.add("hidden");
+        if(me.type === 'مافیا') {
+          document.getElementById("mafia-team").classList.remove("hidden");
+          document.getElementById("mafia-names").textContent = Object.values(players).filter(p=>p.type==='مافیا' && p.approved).map(p=>p.name).join(", ");
         }
+
+        let nBox = document.getElementById("night-box");
+        if(["سەرۆکێ مافیا","مافیێ سادە","مافیێ فێلباز","نوژدارێ هاولاتیا","نوژدارێ مافیا","پولیس","شاە کوژ","ڤەکولەر"].includes(me.role)) {
+          nBox.classList.remove("hidden");
+          document.getElementById("night-select").innerHTML = pKeys.filter(k=>k!==me.id && k!==data.host && players[k].approved).map(k=>`<option value="${k}">${players[k].name}</option>`).join("");
+        } else nBox.classList.add("hidden");
 
         let isDay = (data.phase === "ڕۆژ");
         document.getElementById("phase-title").textContent = isDay ? "☀️ ڕۆژ (دەنگدان)" : "🌙 شەڤا تاریک";
         document.getElementById("day-box").classList.toggle("hidden", !isDay);
-        if(!isHost && me.role === 'دادوەر' && isDay) document.getElementById("judge-box").classList.remove("hidden");
+        if(me.role === 'دادوەر' && isDay) document.getElementById("judge-box").classList.remove("hidden");
         else document.getElementById("judge-box").classList.add("hidden");
 
-        if(isHost) {
-          let acts = data.nightActions || {};
-          let lHtml = Object.keys(acts).map(k=>`• <b>${acts[k].actor}</b> (${acts[k].role}) -> <b>${acts[k].target}</b>`).join("<br>");
-          document.getElementById("host-logs").innerHTML = lHtml || "چ چالاکی نەهاتیە کرن.";
-        }
-
         if(isDay) {
-          let vHtml = pKeys.filter(k=>k!==me.id && k!==data.host).map(k=>`<div class="player-row"><span>${players[k].name}</span> <button style="width:auto;padding:5px 10px" onclick="voteP('${players[k].name}')">دەنگدان</button></div>`).join("");
-          document.getElementById("vote-list").innerHTML = vHtml;
-
-          let votes = data.votes || {};
-          let vRes = Object.keys(votes).map(k=>`• <b>${votes[k].voter}</b> دەنگ دا بۆ <b>${votes[k].target}</b>`).join("<br>");
-          document.getElementById("vote-results").innerHTML = vRes || "چ دەنگ نەهاتینە دان.";
+          document.getElementById("vote-list").innerHTML = pKeys.filter(k=>k!==me.id && k!==data.host && players[k].approved).map(k=>`<div class="player-row"><span>${players[k].name}</span> <button style="width:auto;padding:5px 10px" onclick="voteP('${players[k].name}')">دەنگدان</button></div>`).join("");
         }
       }
     });
   }
 
-  window.flipCard = () => {
-    if(isHost) return;
-    flipped = !flipped;
-    document.getElementById("card-inner").classList.toggle("flipped", flipped);
-  };
-
-  document.getElementById("btn-start").onclick = () => {
-    get(ref(db, 'rooms/' + room)).then(snap => {
-      let players = snap.val().players;
-      let pIds = Object.keys(players).filter(k => k !== snap.val().host);
-      let shuf = [...roles].sort(()=>Math.random()-0.5);
-      let up = { [`rooms/${room}/status`]: 'playing', [`rooms/${room}/phase`]: 'شەڤ', [`rooms/${room}/votes`]: null, [`rooms/${room}/nightActions`]: null };
-      pIds.forEach((id, idx) => {
-        up[`rooms/${room}/players/${id}/role`] = shuf[idx % shuf.length][0];
-        up[`rooms/${room}/players/${id}/type`] = shuf[idx % shuf.length][1];
-      });
-      update(ref(db), up);
-    });
-  };
+  window.flipCard = () => { flipped = !flipped; document.getElementById("card-inner").classList.toggle("flipped", flipped); };
+  window.voteP = (tName) => { set(ref(db, `rooms/${room}/votes/${me.id}`), { voter: me.name, target: tName }).then(()=>alert("دەنگ هاتە تۆمارکرن!")); };
+  window.judgeAct = (dec) => { set(ref(db, `rooms/${room}/judgeDecision`), dec).then(()=>alert("بڕیار هاتەدان!")); };
 
   document.getElementById("btn-night-act").onclick = () => {
-    let targetId = document.getElementById("night-select").value;
-    get(ref(db, `rooms/${room}/players/${targetId}`)).then(snap => {
-      let targetPlayer = snap.val();
-      set(ref(db, `rooms/${room}/nightActions/${me.id}`), { actor: me.name, role: me.role, target: targetPlayer.name }).then(()=>{
+    let tId = document.getElementById("night-select").value;
+    get(ref(db, `rooms/${room}/players/${tId}`)).then(snap => {
+      let tP = snap.val();
+      set(ref(db, `rooms/${room}/nightActions/${me.id}`), { actor: me.name, role: me.role, target: tP.name }).then(()=>{
         let res = document.getElementById("night-res");
-        if(me.role === 'ڤەکولەر') res.textContent = `🔍 ڕۆلێ ڕاستەقینە یێ (${targetPlayer.name}): [ ${targetPlayer.role} ]`;
-        else res.textContent = `✅ بڕیارا تە بۆ سەرۆکی هاتە هناردن!`;
+        if(me.role === 'ڤەکولەر') res.textContent = `🔍 ڕۆلێ (${tP.name}): [ ${tP.role} ]`;
+        else res.textContent = `✅ بڕیار بۆ سەرۆکی هاتیە هناردن!`;
       });
     });
   };
 
-  window.voteP = (tName) => {
-    set(ref(db, `rooms/${room}/votes/${me.id}`), { voter: me.name, target: tName }).then(()=>alert("دەنگێ تە هاتە تۆمارکرن!"));
-  };
-
-  window.judgeAct = (dec) => {
-    set(ref(db, `rooms/${room}/judgeDecision`), dec).then(()=>alert("بڕیارا دادوەری هاتە تۆمارکرن!"));
-  };
-
-  window.kickP = (pId) => {
-    if(confirm("دڤێت ئەڤی یاریزانی دەرخەی؟")) remove(ref(db, `rooms/${room}/players/${pId}`));
-  };
-
-  document.getElementById("btn-phase").onclick = () => {
-    get(ref(db, 'rooms/' + room + '/phase')).then(snap => {
-      let next = snap.val() === "شەڤ" ? "ڕۆژ" : "شەڤ";
-      update(ref(db, 'rooms/' + room), { phase: next, votes: null, nightActions: null });
-    });
-  };
-
-  document.getElementById("btn-exit").onclick = () => {
-    if(isHost) remove(ref(db, 'rooms/' + room));
-    else remove(ref(db, `rooms/${room}/players/${me.id}`));
-    location.reload();
-  };
+  document.getElementById("btn-exit").onclick = () => { remove(ref(db, `rooms/${room}/players/${me.id}`)); location.reload(); };
 </script>
 </body>
 </html>
