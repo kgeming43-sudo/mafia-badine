@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>یارییا مافیا بادینی</title>
+<title>یارییا مافیا بادینی - پرۆفیشناڵ</title>
 <style>
 :root{--red:#e63950;--bg:#070508;--panel:#151017}
 *{box-sizing:border-box}
@@ -32,12 +32,14 @@ button:disabled{opacity:.5}
 .role-card-inner.flipped{transform:rotateY(180deg)}
 .role-front, .role-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;box-shadow:inset 0 0 20px rgba(0,0,0,0.8)}
 .role-front{background:linear-gradient(135deg, #1f0c13, #0d0609);color:#ff4757;font-size:20px;border:2px dashed #ff4757}
-.role-back{background:linear-gradient(135deg, #2b0c15, #120307);color:#fff;transform:rotateY(180deg);font-size:24px;font-weight:bold;border:2px solid #ff4757;text-shadow:0 0 8px rgba(255,71,87,0.6)}
+.role-back{background:linear-gradient(135deg, #2b0c15, #120307);color:#fff;transform:rotateY(180deg);font-size:22px;font-weight:bold;border:2px solid #ff4757;text-shadow:0 0 8px rgba(255,71,87,0.6)}
 
 .small{font-size:13px;color:#9a8894}
 #message{color:#ff4757;font-weight:bold;text-align:center;margin-top:10px;}
 .vote-item{display:flex;justify-content:space-between;align-items:center;background:#1e141b;padding:10px;border-radius:10px;margin:6px 0;border:1px solid #36222d}
-.vote-result-box{background:#110a12;border:1px dashed #ffa502;padding:10px;border-radius:8px;margin-top:10px;font-size:14px;color:#ffa502;}
+.night-action-box{background:#110a14;border:1px solid #8e44ad;padding:14px;border-radius:12px;margin:10px 0;}
+.judge-panel{background:#1c1917;border:2px solid #eab308;padding:14px;border-radius:14px;margin:12px 0;text-align:center;}
+.host-secret-panel{background:#1a0c10;border:1px dashed #ffa502;padding:14px;border-radius:14px;margin-top:15px;}
 .music-panel{background:#120c15;border:1px solid #4a225e;border-radius:14px;padding:14px;margin-top:15px;text-align:center;}
 </style>
 </head>
@@ -46,7 +48,7 @@ button:disabled{opacity:.5}
 <header>
 <div class="logo">🎴</div>
 <h1>مافیا بادینی</h1>
-<p>ژوورا ترسناک • سەرۆک کۆنترۆڵ • دەنگدانا ئاشکرا</p>
+<p>پەنەلا سەرۆکی • نهێنیێن شەڤێ • دەنگدانا ئاشکرا</p>
 </header>
 
 <section id="home" class="card">
@@ -69,13 +71,14 @@ button:disabled{opacity:.5}
 <div id="hostControls" class="hidden">
 <button id="start-btn">دەستپێکرنا یاریێ ♠️</button>
 </div>
-<p class="small">تەنها سەرۆک دشیێت یاریێ دەست پێ بکەت و خۆ بڕێڤە دبت.</p>
+<p class="small">سەرۆک یاریێ بڕێوە دەبت و نهێنیێن شەڤێ ل دەف وی دیار دبن.</p>
 </section>
 
 <section id="game" class="card hidden">
 <h2 id="phaseTitle">شەڤا تاریک</h2>
-<p id="phaseInfo">کارتێ خۆ هەلبژێرە و ڕۆلێ خۆ ببینە.</p>
+<p id="phaseInfo">کارتێ خۆ هەلبژێرە و چالاکیێن شەڤێ ئەنجام بدە.</p>
 
+<!-- Player Secret Game Area -->
 <div id="playerGameArea">
 <div class="role-card-container" onclick="revealRoleCard()">
 <div id="roleCardInner" class="role-card-inner">
@@ -88,13 +91,29 @@ button:disabled{opacity:.5}
 <h3 style="color:#ff4757; margin:0 0 8px 0;">👥 هەڤالێن مافیا (تیمی):</h3>
 <p id="mafiaTeamNames" class="small">-</p>
 </div>
+
+<!-- Night Actions for Special Roles -->
+<div id="nightActionArea" class="night-action-box hidden">
+<h3 style="color:#c084fc; margin:0 0 5px 0;" id="nightActionTitle">🌙 چالاکیا ڕۆلێ تە</h3>
+<p class="small" id="nightActionDesc">کەسێ مەبەست هەلبژێرە:</p>
+<select id="nightTargetSelect"></select>
+<button style="margin-top:10px; background:#7e22ce;" onclick="submitNightAction()">تۆمارکرنا بڕیارا شەڤێ 🔒</button>
+<div id="nightActionStatus" class="small" style="color:#4ade80; margin-top:8px; font-weight:bold; background:#1e1b4b; padding:8px; border-radius:6px; display:none;"></div>
+</div>
 </div>
 
-<!-- Host Control Panel -->
+<!-- Host Control & Secret Night Logs Panel -->
 <div id="hostGameControls" class="hidden" style="margin-top:15px; border-top:1px solid #3d1b26; padding-top:10px;">
-<h3 style="color:#ffa502; margin:5px 0;">👑 کۆنترۆلا سەرۆکی (بێ یاری)</h3>
-<p class="small">تە وەک سەرۆک ڕۆل نینە، تەنها یاریێ بڕێڤە دبە.</p>
-<button id="nextPhaseBtn" class="secondary">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
+<h3 style="color:#ffa502; margin:5px 0;">👑 کۆنترۆلا سەرۆکی و نهێنیێن شەڤێ</h3>
+<p class="small">تە وەک سەرۆک چ ڕۆل نینە، بەلکو نهێنیێن شەڤێ ل ڤێرە ب تەواوی بۆ تە دیار دبن:</p>
+
+<div class="host-secret-panel">
+<h4 style="color:#ff4757; margin:0 0 8px 0;">📋 تۆمار و چاڤدێریا سەرۆکی (شەڤ):</h4>
+<div id="hostSecretLogs" class="small" style="line-height:1.8; color:#f3e8ff;">هێشتا چ چالاکیەک نەهاتیە کرن.</div>
+</div>
+
+<button id="nextPhaseBtn" class="secondary" style="margin-top:10px;">گۆڕینا شەڤ / ڕۆژ 🌙☀️</button>
+
 <div class="music-panel">
 <h3 style="color:#9b59b6; margin:5px 0;">🎶 موزیکا ترسناک و حماس</h3>
 <button class="music-btn" id="startMusicBtn">لێدانا موزیکا مافیا ▶️</button>
@@ -102,11 +121,28 @@ button:disabled{opacity:.5}
 </div>
 </div>
 
+<!-- Day Voting Area -->
 <div id="actions" class="hidden" style="margin-top:15px;">
 <h3 style="color:#ffa502;">🗳️ دەنگدانا ڕۆژێ (ئاشکرا)</h3>
-<p class="small">یاریزانەکێ گۆمانلێکری بۆ ژناڤبرنێ هەلبژێرە:</p>
+
+<!-- Judge Panel (Visible only to Judge during Day) -->
+<div id="judgeArea" class="judge-panel hidden">
+<h3 style="color:#eab308; margin:0 0 5px 0;">⚖️ بڕیارا دادوەری (Judge)</h3>
+<p class="small">تو وەک دادوەر دشیێ بڕیارێ سەر دەرئێخستن یان هەڵوەشاندنا بڕیارێ بدە:</p>
+<button style="background:#dc2626; margin-bottom:6px;" onclick="judgeDecision('کوشتن / دەرئێخستن ❌')">پەسەندکرنا دەرئێخستنێ 🔨</button>
+<button style="background:#16a34a;" onclick="judgeDecision('هەڵوەشاندن / بێتاوانکرن 🕊️')">هەڵوەشاندنا دەنگدانێ 🕊️</button>
+<div id="judgeStatus" class="small" style="color:#fef08a; margin-top:8px; font-weight:bold;"></div>
+</div>
+
+<p class="small">یاریزانەکێ گۆمانلێکری بۆ دەرئێخستنێ هەلبژێرە:</p>
 <div id="voteList"></div>
-<div id="voteResultsContainer" class="vote-result-box">
+
+<div id="judgePublicResult" class="card hidden" style="background:#262010; border-color:#eab308; padding:10px; text-align:center;">
+<h4 style="color:#eab308; margin:0;">⚖️ بڕیارا دووماهیێ یا دادوەری:</h4>
+<p id="judgePublicText" style="margin:5px 0; font-weight:bold; font-size:16px;">-</p>
+</div>
+
+<div id="voteResultsContainer" class="vote-result-box" style="background:#110a12; border:1px dashed #ffa502; padding:10px; border-radius:8px; margin-top:10px; font-size:14px; color:#ffa502;">
 <strong>ئەنجامێن دەنگدانا ڕاستەقینە:</strong>
 <div id="voteResultsList" style="margin-top:5px;" class="small">هێشتا چ دەنگ نەهاتینە دان.</div>
 </div>
@@ -135,7 +171,7 @@ button:disabled{opacity:.5}
   const db = getDatabase(app);
 
   const rolesList = [
-      ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["سەرۆکێ مافیا","مافیا"], 
+      ["سەرۆکێ مافیا","مافیا"], ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], 
       ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], 
       ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], 
       ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], 
@@ -238,6 +274,8 @@ button:disabled{opacity:.5}
           phase: 'شەڤ',
           musicPlaying: false,
           votes: {},
+          nightActions: {},
+          judgeDecision: '',
           players: {
               [me.id]: { name: me.name, role: 'سەرۆک (بڕێوەبەر)', type: 'host' }
           }
@@ -298,14 +336,14 @@ button:disabled{opacity:.5}
           let html = '';
           playerList.forEach(id => {
               let isRoomHost = (id === data.host);
-              html += `<div class="player"><span>👤 ${escapeHtml(players[id].name)} ${isRoomHost ? '<small style="color:#ffa502">(سەرۆک)</small>' : ''}</span></div>`;
+              html += `<div class="player">👤 ${escapeHtml(players[id].name)} ${isRoomHost ? '<small style="color:#ffa502">(سەرۆک)</small>' : ''}</div>`;
           });
           document.getElementById("players").innerHTML = html;
 
           if (isHost) {
               document.getElementById("hostControls").classList.remove("hidden");
               document.getElementById("hostGameControls").classList.remove("hidden");
-              document.getElementById("playerGameArea").classList.add("hidden"); // Host doesn't play
+              document.getElementById("playerGameArea").classList.add("hidden");
           } else {
               document.getElementById("playerGameArea").classList.remove("hidden");
           }
@@ -327,12 +365,72 @@ button:disabled{opacity:.5}
                       });
                       document.getElementById("mafiaTeamNames").textContent = mafiaNames.join(", ");
                   }
+
+                  const nightArea = document.getElementById("nightActionArea");
+                  const nightTitle = document.getElementById("nightActionTitle");
+                  const nightDesc = document.getElementById("nightActionDesc");
+                  const targetSelect = document.getElementById("nightTargetSelect");
+
+                  if (me.role === "سەرۆکێ مافیا" || me.role === "مافیێ سادە" || me.role === "مافیێ فێلباز" || me.role === "نوژدارێ هاولاتیا" || me.role === "نوژدارێ مافیا" || me.role === "پولیس" || me.role === "شاە کوژ") {
+                      nightArea.classList.remove("hidden");
+                      nightTitle.textContent = `🌙 چالاکیا ڕۆلێ تە: ${me.role}`;
+                      
+                      if (me.type === "مافیا") {
+                          nightDesc.textContent = "کەسێ دڤێ تەڤکوژر بن هەلبژێرە:";
+                      } else if (me.role.includes("نوژدار")) {
+                          nightDesc.textContent = "کەسێ دڤێ بپارێزی هەلبژێرە:";
+                      } else if (me.role === "پولیس") {
+                          nightDesc.textContent = "کەسێ دڤێ پشکنی هەلبژێرە:";
+                      } else if (me.role === "شاە کوژ") {
+                          nightDesc.textContent = "کەسێ دڤێ شەڤێ بکۆژی هەلبژێرە:";
+                      }
+
+                      let selHtml = "";
+                      playerList.forEach(id => {
+                          if (id !== me.id && id !== data.host) {
+                              selHtml += `<option value="${escapeHtml(players[id].name)}">${escapeHtml(players[id].name)}</option>`;
+                          }
+                      });
+                      targetSelect.innerHTML = selHtml;
+                  } else {
+                      nightArea.classList.add("hidden");
+                  }
               }
               
               const isDay = data.phase === "ڕۆژ";
               document.body.classList.toggle("day-phase", isDay);
-              document.getElementById("phaseTitle").textContent = isDay ? "☀️ ڕۆژ (دەنگدانا ئاشکرا)" : "🌙 شەڤا تاریک (ڕۆلێن شەڤێ)";
+              document.getElementById("phaseTitle").textContent = isDay ? "☀️ ڕۆژ (دەنگدانا ئاشکرا)" : "🌙 شەڤا تاریک (چالاکیێن شەڤێ)";
               document.getElementById("actions").classList.toggle("hidden", !isDay);
+
+              // Judge Controls in Day Phase
+              if (isDay && me.role === "دادوەر") {
+                  document.getElementById("judgeArea").classList.remove("hidden");
+              } else {
+                  document.getElementById("judgeArea").classList.add("hidden");
+              }
+
+              // Display Judge Public Decision if available
+              if (isDay && data.judgeDecision) {
+                  document.getElementById("judgePublicResult").classList.remove("hidden");
+                  document.getElementById("judgePublicText").textContent = data.judgeDecision;
+              } else {
+                  document.getElementById("judgePublicResult").classList.add("hidden");
+              }
+
+              if (isHost) {
+                  let nActions = data.nightActions || {};
+                  let logHtml = "";
+                  let keys = Object.keys(nActions);
+                  if (keys.length === 0) {
+                      logHtml = "هێشتا چ کەسەک لە شەڤدا چالاکی نەدایە.";
+                  } else {
+                      keys.forEach(k => {
+                          let act = nActions[k];
+                          logHtml += `• <b>${escapeHtml(act.actorName)}</b> (${escapeHtml(act.role)}) هدف ژ هەلبژارت: <b>${escapeHtml(act.target)}</b><br>`;
+                      });
+                  }
+                  document.getElementById("hostSecretLogs").innerHTML = logHtml;
+              }
 
               if (isDay) {
                   let voteHtml = '';
@@ -343,7 +441,6 @@ button:disabled{opacity:.5}
                   });
                   document.getElementById("voteList").innerHTML = voteHtml;
 
-                  // Render live votes results
                   let votes = data.votes || {};
                   let voteResHtml = "";
                   let vKeys = Object.keys(votes);
@@ -369,6 +466,13 @@ button:disabled{opacity:.5}
       if (isFlipped && me.type === "مافیا") playSound('mafia');
   };
 
+  window.judgeDecision = function(decision) {
+      playSound('click');
+      set(ref(db, `rooms/${room}/judgeDecision`), decision).then(() => {
+          document.getElementById("judgeStatus").textContent = "✅ بڕیارا تە دادوەر هاتە ئاشکراکرن بۆ هەمی یاریزانان!";
+      });
+  };
+
   document.getElementById("copy-btn").addEventListener("click", () => {
       playSound('click');
       if (navigator.clipboard) navigator.clipboard.writeText(room);
@@ -382,7 +486,6 @@ button:disabled{opacity:.5}
           const players = data.players;
           const playerIds = Object.keys(players);
 
-          // Filter out host from receiving roles
           let playingIds = playerIds.filter(id => id !== data.host);
           let deck = shuffle([...rolesList]);
 
@@ -390,6 +493,8 @@ button:disabled{opacity:.5}
           updates[`rooms/${room}/status`] = 'playing';
           updates[`rooms/${room}/phase`] = 'شەڤ';
           updates[`rooms/${room}/votes`] = null;
+          updates[`rooms/${room}/nightActions`] = null;
+          updates[`rooms/${room}/judgeDecision`] = '';
 
           playingIds.forEach((id, index) => {
               let assigned = deck[index % deck.length];
@@ -401,9 +506,22 @@ button:disabled{opacity:.5}
       });
   });
 
+  window.submitNightAction = function() {
+      playSound('click');
+      const target = document.getElementById("nightTargetSelect").value;
+      set(ref(db, `rooms/${room}/nightActions/${me.id}`), {
+          actorName: me.name,
+          role: me.role,
+          target: target
+      }).then(() => {
+          const statusDiv = document.getElementById("nightActionStatus");
+          statusDiv.style.display = "block";
+          statusDiv.textContent = `✅ بڕیارا تە هاتە تۆمارکرن: هدفێ تە (${target}) ب سەرکەفتن بۆ سەرۆکی هاتیە هناردن!`;
+      });
+  };
+
   window.castVote = function(targetName) {
       playSound('click');
-      // Save vote in Firebase
       set(ref(db, `rooms/${room}/votes/${me.id}`), {
           voter: me.name,
           target: targetName
@@ -421,7 +539,9 @@ button:disabled{opacity:.5}
           
           let updates = { phase: next };
           if (next === "شەڤ") {
-              updates["votes"] = null; // Clear votes when entering night
+              updates["votes"] = null;
+              updates["nightActions"] = null;
+              updates["judgeDecision"] = '';
           }
           update(ref(db, 'rooms/' + room), updates);
       });
