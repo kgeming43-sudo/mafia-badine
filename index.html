@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>یارییا مافیا بادینی</title>
-<!-- Firebase SDKs (Classic Scripts - No Module Error) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
 <style>
 :root{--red:#e63950;--bg:#0b090d;--panel:#19131a}
 *{box-sizing:border-box}
@@ -46,10 +42,10 @@ button:disabled{opacity:.5}
 <section id="home" class="card">
 <h2>ب خێرهاتی</h2>
 <input id="name" maxlength="20" placeholder="ناڤێ تە">
-<button onclick="playBtnSound(); createRoom();">دروستکرنا ژوورەکێ نوو</button>
+<button id="create-btn">دروستکرنا ژوورەکێ نوو</button>
 <hr style="border-color:#48212d">
 <input id="pinInput" maxlength="6" inputmode="numeric" placeholder="کۆدێ ژوورێ PIN">
-<button class="secondary" onclick="playBtnSound(); joinRoom();">چوونا ژوورێ</button>
+<button id="join-btn" class="secondary">چوونا ژوورێ</button>
 <p id="message"></p>
 </section>
 
@@ -57,11 +53,11 @@ button:disabled{opacity:.5}
 <h2>ژوورا مافیا</h2>
 <p>کۆدێ ژوورێ:</p>
 <div class="pin" id="pinDisplay"></div>
-<button class="secondary" onclick="playBtnSound(); copyPin();">کۆپی کرنا کۆدێ ژوورێ</button>
+<button id="copy-btn" class="secondary">کۆپی کرنا کۆدێ ژوورێ</button>
 <p id="count">٠ یاریزان</p>
 <div id="players"></div>
 <div id="hostControls" class="hidden">
-<button onclick="playBtnSound(); startGame();">دەستپێکرنا یاریێ</button>
+<button id="start-btn">دەستپێکرنا یاریێ</button>
 </div>
 <p class="small">سەرۆک دێ یاریێ دەست پێ کەت دەما هەمی هەڤال هاتنە ناڤ ژوورێ.</p>
 </section>
@@ -70,266 +66,284 @@ button:disabled{opacity:.5}
 <h2 id="phaseTitle">ڕۆلێ تە</h2>
 <p id="phaseInfo">کارتێ خۆ ڤەکە و ڕۆلێ خۆ ببینە.</p>
 <div id="roleCard" class="role">🔒 ڕۆلێ خۆ ببینە</div>
-<button id="reveal" onclick="playBtnSound(); revealRole();">نیشاندانا ڕۆلێ من</button>
+<button id="reveal">نیشاندانا ڕۆلێ من</button>
 
 <div id="policeControls" class="hidden" style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
 <h3 style="color:#60a5fa; margin:5px 0;">🚔 دەسەڵاتێن پۆلیسی</h3>
-<button class="police-btn" onclick="playBtnSound(); toggleMuteAll(true);">بێدەنگکرنا یاریزانان 🔇</button>
-<button class="police-btn" style="background:#2563eb;" onclick="playBtnSound(); toggleMuteAll(false);">ڤەکرنا ئاخفتنێ 🎙️</button>
+<button id="mute-all-btn" class="police-btn">بێدەنگکرنا یاریزانان 🔇</button>
+<button id="unmute-all-btn" class="police-btn" style="background:#2563eb; margin-top:5px;">ڤەکرنا ئاخفتنێ 🎙️</button>
 </div>
 
-<button id="nextPhaseBtn" class="secondary hidden" onclick="playBtnSound(); nextPhase();">گۆڕینا شەڤ / ڕۆژ</button>
-<button class="secondary" onclick="playBtnSound(); location.reload();">دەرکەفتن</button>
+<button id="nextPhaseBtn" class="secondary hidden">گۆڕینا شەڤ / ڕۆژ</button>
+<button id="exit-btn" class="secondary">دەرکەفتن</button>
 
 <div class="audio-panel">
 <h3>🎙️ بێسیم و ئاخفتن</h3>
-<button id="micBtn" class="secondary" onclick="toggleMic()">چالاککرنا مایکێ 🎤</button>
+<button id="micBtn" class="secondary">چالاککرنا مایکێ 🎤</button>
 <p id="micStatus" class="small">مایک ئامادەیە</p>
 </div>
 </section>
 </main>
 
-<script>
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyApi9n_0mZM1-ErqnBZTk",
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyApi9n_0mZM1-ErqnBZTkDignhe0jBo4ys",
     authDomain: "mafia-badine.firebaseapp.com",
-    databaseURL: "https://mafia-badine-default-rtdb.firebaseio.com",
+    databaseURL: "https://mafia-badine-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "mafia-badine",
-    storageBucket: "mafia-badine.appspot.com",
-    messagingSenderId: "38192840192",
-    appId: "1:38192840192:web:abcdef123456"
-};
+    storageBucket: "mafia-badine.firebasestorage.app",
+    messagingSenderId: "840454511215",
+    appId: "1:840454511215:web:d3b25381c58ac6f7128b9a",
+    measurementId: "G-WXEJ408891"
+  };
 
-// Initialize Firebase Classic
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-const roles = [
-    ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["سەرۆکێ مافیا","مافیا"], 
-    ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], ["گروپێ هاولاتی","هاولاتی"], 
-    ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], 
-    ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], 
-    ["ڤەکولەر","هاولاتی"], ["هاولاتیێ بێ دەنک","هاولاتی"], ["هاولاتیێ بومبە","هاولاتی"], 
-    ["کشاف","هاولاتی"], ["نوژدارێ هاولاتیا","هاولاتی"]
-];
+  const roles = [
+      ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["سەرۆکێ مافیا","مافیا"], 
+      ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], ["گروپێ هاولاتی","هاولاتی"], 
+      ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], 
+      ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], 
+      ["ڤەکولەر","هاولاتی"], ["هاولاتیێ بێ دەنک","هاولاتی"], ["هاولاتیێ بومبە","هاولاتی"], 
+      ["کشاف","هاولاتی"], ["نوژدارێ هاولاتیا","هاولاتی"]
+  ];
 
-let room = null;
-let me = { id: 'usr_' + Math.random().toString(36).substr(2, 7), name: '', role: null };
-let isHost = false;
-let revealed = false;
-let audioCtx = null;
+  let room = null;
+  let me = { id: 'usr_' + Math.random().toString(36).substr(2, 7), name: '', role: null };
+  let isHost = false;
+  let revealed = false;
+  let audioCtx = null;
 
-function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-}
+  function initAudio() {
+      if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+  }
 
-window.playBtnSound = function() {
-    try {
-        initAudio();
-        let osc = audioCtx.createOscillator();
-        let gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
-    } catch(e){}
-};
+  function playBtnSound() {
+      try {
+          initAudio();
+          let osc = audioCtx.createOscillator();
+          let gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.1);
+      } catch(e){}
+  }
 
-function playRoleSound(roleType) {
-    try {
-        initAudio();
-        let osc = audioCtx.createOscillator();
-        let gain = audioCtx.createGain();
-        if (roleType.includes("مافیا")) {
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.type = 'sawtooth';
-        } else {
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.type = 'square';
-        }
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.5);
-    } catch(e){}
-}
+  function playRoleSound(roleType) {
+      try {
+          initAudio();
+          let osc = audioCtx.createOscillator();
+          let gain = audioCtx.createGain();
+          if (roleType.includes("مافیا")) {
+              osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+              osc.type = 'sawtooth';
+          } else {
+              osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+              osc.type = 'square';
+          }
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.5);
+      } catch(e){}
+  }
 
-function show(id) {
-    ["home", "lobby", "game"].forEach(x =>
-        document.getElementById(x).classList.toggle("hidden", x !== id)
-    );
-}
+  function show(id) {
+      ["home", "lobby", "game"].forEach(x =>
+          document.getElementById(x).classList.toggle("hidden", x !== id)
+      );
+  }
 
-function msg(t) { document.getElementById("message").textContent = t; }
+  function msg(t) { document.getElementById("message").textContent = t; }
 
-function shuffle(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
+  function shuffle(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+  }
 
-window.createRoom = function() {
-    const name = document.getElementById("name").value.trim();
-    if (!name) { msg("سەرەتا ناڤێ خۆ بنڤیسە."); return; }
-    
-    me.name = name;
-    room = String(Math.floor(100000 + Math.random() * 900000));
-    isHost = true;
+  document.getElementById("create-btn").addEventListener("click", () => {
+      playBtnSound();
+      const name = document.getElementById("name").value.trim();
+      if (!name) { msg("سەرەتا ناڤێ خۆ بنڤیسە."); return; }
+      
+      me.name = name;
+      room = String(Math.floor(100000 + Math.random() * 900000));
+      isHost = true;
 
-    const roomRef = db.ref('rooms/' + room);
-    roomRef.set({
-        host: me.id,
-        status: 'lobby',
-        phase: 'شەڤ',
-        globalMute: false,
-        players: {
-            [me.id]: { name: me.name, role: '' }
-        }
-    }).then(() => {
-        listenToRoom();
-    }).catch(err => {
-        msg("خەلەتی: " + err.message);
-    });
-};
+      const roomRef = ref(db, 'rooms/' + room);
+      set(roomRef, {
+          host: me.id,
+          status: 'lobby',
+          phase: 'شەڤ',
+          globalMute: false,
+          players: {
+              [me.id]: { name: me.name, role: '' }
+          }
+      }).then(() => {
+          listenToRoom();
+      }).catch(err => {
+          msg("خەلەتی: " + err.message);
+      });
+  });
 
-window.joinRoom = function() {
-    const name = document.getElementById("name").value.trim();
-    const pin = document.getElementById("pinInput").value.trim();
-    if (!name || pin.length !== 6) { msg("ناڤ و کۆدێ ٦ ژمارەیی بنڤیسە."); return; }
+  document.getElementById("join-btn").addEventListener("click", () => {
+      playBtnSound();
+      const name = document.getElementById("name").value.trim();
+      const pin = document.getElementById("pinInput").value.trim();
+      if (!name || pin.length !== 6) { msg("ناڤ و کۆدێ ٦ ژمارەیی بنڤیسە."); return; }
 
-    me.name = name;
-    room = pin;
+      me.name = name;
+      room = pin;
 
-    const roomRef = db.ref('rooms/' + room);
-    roomRef.once('value').then((snapshot) => {
-        if (snapshot.exists()) {
-            db.ref(`rooms/${room}/players/${me.id}`).set({
-                name: me.name,
-                role: ''
-            }).then(() => {
-                listenToRoom();
-            });
-        } else {
-            msg("کۆدێ ژوورێ نە داتابێسێ دا نەهاتە دیتن.");
-        }
-    }).catch(err => {
-        msg("خەلەتی: " + err.message);
-    });
-};
+      const roomRef = ref(db, 'rooms/' + room);
+      get(roomRef).then((snapshot) => {
+          if (snapshot.exists()) {
+              set(ref(db, `rooms/${room}/players/${me.id}`), {
+                  name: me.name,
+                  role: ''
+              }).then(() => {
+                  listenToRoom();
+              });
+          } else {
+              msg("کۆدێ ژوورێ نەهاتە دیتن.");
+          }
+      }).catch(err => {
+          msg("خەلەتی: " + err.message);
+      });
+  });
 
-function listenToRoom() {
-    document.getElementById("pinDisplay").textContent = room;
-    show("lobby");
+  function listenToRoom() {
+      document.getElementById("pinDisplay").textContent = room;
+      const roomRef = ref(db, 'rooms/' + room);
 
-    const roomRef = db.ref('rooms/' + room);
-    roomRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
+      onValue(roomRef, (snapshot) => {
+          const data = snapshot.val();
+          if (!data) return;
 
-        const players = data.players || {};
-        const playerList = Object.keys(players);
+          const players = data.players || {};
+          const playerList = Object.keys(players);
 
-        document.getElementById("count").textContent = `${playerList.length} یاریزان`;
-        let html = '';
-        playerList.forEach(id => {
-            let isRoomHost = (id === data.host);
-            html += `<div class="player"><span>${escapeHtml(players[id].name)}</span> ${isRoomHost ? '<small style="color:#ff6579">(سەرۆک)</small>' : ''}</div>`;
-        });
-        document.getElementById("players").innerHTML = html;
+          document.getElementById("count").textContent = `${playerList.length} یاریزان`;
+          let html = '';
+          playerList.forEach(id => {
+              let isRoomHost = (id === data.host);
+              html += `<div class="player"><span>${escapeHtml(players[id].name)}</span> ${isRoomHost ? '<small style="color:#ff6579">(سەرۆک)</small>' : ''}</div>`;
+          });
+          document.getElementById("players").innerHTML = html;
 
-        if (isHost) {
-            document.getElementById("hostControls").classList.remove("hidden");
-            document.getElementById("nextPhaseBtn").classList.remove("hidden");
-        }
+          if (isHost) {
+              document.getElementById("hostControls").classList.remove("hidden");
+              document.getElementById("nextPhaseBtn").classList.remove("hidden");
+          }
 
-        if (data.globalMute && me.role !== "پولیس" && !isHost) {
-            document.getElementById("micBtn").disabled = true;
-            document.getElementById("micStatus").textContent = "🔇 ئاخفتن هاتیە ڕاوەستاندن";
-        } else {
-            document.getElementById("micBtn").disabled = false;
-            document.getElementById("micStatus").textContent = "🎙️ مایک ئامادەیە";
-        }
+          if (data.globalMute && me.role !== "پولیس" && !isHost) {
+              document.getElementById("micBtn").disabled = true;
+              document.getElementById("micStatus").textContent = "🔇 ئاخفتن هاتیە ڕاوەستاندن";
+          } else {
+              document.getElementById("micBtn").disabled = false;
+              document.getElementById("micStatus").textContent = "🎙️ مایک ئامادەیە";
+          }
 
-        if (data.status === 'lobby') {
-            show("lobby");
-        } else if (data.status === 'playing') {
-            show("game");
-            if (players[me.id]) {
-                me.role = players[me.id].role;
-                if (me.role === "پولیس" || isHost) {
-                    document.getElementById("policeControls").classList.remove("hidden");
-                }
-            }
-            
-            document.getElementById("phaseTitle").textContent = data.phase || "شەڤ";
-            document.getElementById("phaseInfo").textContent = 
-                data.phase === "شەڤ" ? "شەڤ هات؛ ڕۆلێن شەڤێ دەست پێ دکەن." : "ڕۆژ هات؛ گەنگەشە دەست پێ دکەت.";
-        }
-    });
-}
+          if (data.status === 'lobby') {
+              show("lobby");
+          } else if (data.status === 'playing') {
+              show("game");
+              if (players[me.id]) {
+                  me.role = players[me.id].role;
+                  if (me.role === "پولیس" || isHost) {
+                      document.getElementById("policeControls").classList.remove("hidden");
+                  }
+              }
+              
+              document.getElementById("phaseTitle").textContent = data.phase || "شەڤ";
+              document.getElementById("phaseInfo").textContent = 
+                  data.phase === "شەڤ" ? "شەڤ هات؛ ڕۆلێن شەڤێ دەست پێ دکەن." : "ڕۆژ هات؛ گەنگەشە دەست پێ دکەت.";
+          }
+      });
+  }
 
-window.copyPin = function() {
-    if (navigator.clipboard) navigator.clipboard.writeText(room);
-    alert("کۆدێ ژوورێ: " + room);
-};
+  document.getElementById("copy-btn").addEventListener("click", () => {
+      playBtnSound();
+      if (navigator.clipboard) navigator.clipboard.writeText(room);
+      alert("کۆدێ ژوورێ: " + room);
+  });
 
-window.startGame = function() {
-    db.ref('rooms/' + room).once('value').then((snapshot) => {
-        const data = snapshot.val();
-        const players = data.players;
-        const playerIds = Object.keys(players);
+  document.getElementById("start-btn").addEventListener("click", () => {
+      playBtnSound();
+      get(ref(db, 'rooms/' + room)).then((snapshot) => {
+          const data = snapshot.val();
+          const players = data.players;
+          const playerIds = Object.keys(players);
 
-        let deck = shuffle([...roles]);
-        let updates = {};
-        updates[`rooms/${room}/status`] = 'playing';
-        updates[`rooms/${room}/phase`] = 'شەڤ';
+          let deck = shuffle([...roles]);
+          let updates = {};
+          updates[`rooms/${room}/status`] = 'playing';
+          updates[`rooms/${room}/phase`] = 'شەڤ';
 
-        playerIds.forEach((id, index) => {
-            updates[`rooms/${room}/players/${id}/role`] = deck[index % deck.length][0];
-        });
+          playerIds.forEach((id, index) => {
+              updates[`rooms/${room}/players/${id}/role`] = deck[index % deck.length][0];
+          });
 
-        db.ref().update(updates);
-    });
-};
+          update(ref(db), updates);
+      });
+  });
 
-window.revealRole = function() {
-    if (!me.role) return;
-    revealed = !revealed;
-    document.getElementById("roleCard").textContent = revealed ? me.role : "🔒 ڕۆلێ خۆ ببینە";
-    document.getElementById("reveal").textContent = revealed ? "شارِتنا ڕۆلێ خۆ" : "نیشاندانا ڕۆلێ من";
-    if (revealed) playRoleSound(me.role);
-};
+  document.getElementById("reveal").addEventListener("click", () => {
+      playBtnSound();
+      if (!me.role) return;
+      revealed = !revealed;
+      document.getElementById("roleCard").textContent = revealed ? me.role : "🔒 ڕۆلێ خۆ ببینە";
+      document.getElementById("reveal").textContent = revealed ? "شارِتنا ڕۆلێ خۆ" : "نیشاندانا ڕۆلێ من";
+      if (revealed) playRoleSound(me.role);
+  });
 
-window.toggleMuteAll = function(status) {
-    db.ref('rooms/' + room).update({ globalMute: status });
-};
+  document.getElementById("mute-all-btn").addEventListener("click", () => {
+      playBtnSound();
+      update(ref(db, 'rooms/' + room), { globalMute: true });
+  });
 
-window.nextPhase = function() {
-    db.ref('rooms/' + room + '/phase').once('value').then((snapshot) => {
-        let currentPhase = snapshot.val() || "شەڤ";
-        let newPhase = currentPhase === "شەڤ" ? "ڕۆژ" : "شەڤ";
-        db.ref('rooms/' + room).update({ phase: newPhase });
-    });
-};
+  document.getElementById("unmute-all-btn").addEventListener("click", () => {
+      playBtnSound();
+      update(ref(db, 'rooms/' + room), { globalMute: false });
+  });
 
-window.toggleMic = function() {
-    alert("مایک ب سەرکەفتن هاتە چالاککرن!");
-};
+  document.getElementById("nextPhaseBtn").addEventListener("click", () => {
+      playBtnSound();
+      get(ref(db, 'rooms/' + room + '/phase')).then((snapshot) => {
+          let currentPhase = snapshot.val() || "شەڤ";
+          let newPhase = currentPhase === "شەڤ" ? "ڕۆژ" : "شەڤ";
+          update(ref(db, 'rooms/' + room), { phase: newPhase });
+      });
+  });
 
-function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
+  document.getElementById("exit-btn").addEventListener("click", () => {
+      playBtnSound();
+      location.reload();
+  });
+
+  document.getElementById("micBtn").addEventListener("click", () => {
+      alert("مایک ب سەرکەفتن هاتە چالاککرن!");
+  });
+
+  function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
 </script>
 </body>
 </html>
