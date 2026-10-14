@@ -1,260 +1,335 @@
 <!DOCTYPE html>
 <html lang="ku" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مافیا بادینی - Mafia Badini</title>
-    <style>
-        :root {
-            --bg-color: #121212;
-            --panel-bg: #1e1e1e;
-            --accent-color: #e50914;
-            --text-color: #ffffff;
-            --text-secondary: #b3b3b3;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            width: 100%;
-            max-width: 450px;
-            background: var(--panel-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            text-align: center;
-        }
-        h1 {
-            color: var(--accent-color);
-            margin-bottom: 5px;
-        }
-        p.subtitle {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-        .btn:hover {
-            opacity: 0.9;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .card {
-            background: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 2px solid var(--accent-color);
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-            text-align: right;
-        }
-        li {
-            background: #2a2a2a;
-            padding: 8px 12px;
-            margin: 5px 0;
-            border-radius: 6px;
-        }
-    }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>یارییا مافیا بادینی</title>
+<style>
+:root{--red:#e63950;--bg:#0b090d;--panel:#19131a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#35111d,var(--bg) 65%);color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:18px}
+main{max-width:480px;margin:auto}
+header{text-align:center;padding:24px 0}
+.logo{font-size:48px}
+h1{color:#ff526b;margin:10px 0}
+p{color:#c9bbc4;line-height:1.7}
+.card{background:#19131a;border:1px solid #48212d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 10px 30px #0005}
+h2{font-size:19px}
+input,button,select{width:100%;padding:14px;border-radius:10px;margin:6px 0;font-size:16px}
+input,select{background:#0c0a0e;color:white;border:1px solid #59313d}
+button{border:0;background:var(--red);color:white;font-weight:bold;cursor:pointer;transition:transform 0.1s}
+button:active{transform:scale(0.97)}
+button.secondary{background:#34232c;border:1px solid #69404b}
+button.police-btn{background:#1d4ed8;border:1px solid #3b82f6}
+button:disabled{opacity:.5}
+.hidden{display:none!important}
+.pin{font-size:30px;letter-spacing:5px;color:#ff6579;text-align:center;font-weight:bold}
+.player{padding:10px;background:#241922;border-radius:9px;margin:7px 0;display:flex;justify-content:space-between;align-items:center;}
+.role{font-size:26px;color:#ff6579;text-align:center;padding:22px 8px;border:1px dashed #ff526b;border-radius:12px;margin:10px 0;}
+.small{font-size:13px;color:#a99aa4}
+#message{color:#ff526b;font-weight:bold;text-align:center;margin-top:10px;}
+.audio-panel{background:#111;border:1px solid #333;border-radius:12px;padding:12px;margin-top:15px;text-align:center;}
+</style>
 </head>
 <body>
+<main>
+<header>
+<div class="logo">🎭</div>
+<h1>یارییا مافیا</h1>
+<p>ژوورێ تایبەت • ڕۆلێن نهێنی • سیستەمێ دەنگی</p>
+</header>
 
-<div class="container" id="app">
-    <h1>مافیا بادینی</h1>
-    <p class="subtitle">سیستەمێ ئۆنلاین بۆ یارییا مافیا</p>
+<section id="home" class="card">
+<h2>ب خێرهاتی</h2>
+<input id="name" maxlength="20" placeholder="ناڤێ تە">
+<button onclick="playBtnSound(); createRoom();">دروستکرنا ژوورێ</button>
+<hr style="border-color:#48212d">
+<input id="pinInput" maxlength="6" inputmode="numeric" placeholder="کۆدێ ژوورێ PIN">
+<button class="secondary" onclick="playBtnSound(); joinRoom();">چوونا ژوورێ</button>
+<p id="message"></p>
+</section>
 
-    <!-- بەشێ سەرەکی (چوونا ژوورێ یان دروستکرنێ) -->
-    <div id="auth-screen">
-        <input type="text" id="player-name" placeholder="ناڤێ خۆ لێرە بنڤیسە...">
-        <button class="btn" onclick="createRoom()">دروستکرنا ژوورەکێ نوو</button>
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        <input type="text" id="room-code-input" placeholder="کۆدێ ژوورێ لێرە بنڤیسە...">
-        <button class="btn" style="background-color: #333;" onclick="joinRoom()">چوونا ژوورێ</button>
-    </div>
+<section id="lobby" class="card hidden">
+<h2>ژوورا مافیا</h2>
+<p>کۆدێ ژوورێ:</p>
+<div class="pin" id="pinDisplay"></div>
+<button class="secondary" onclick="playBtnSound(); copyPin();">کۆپی کرنا کۆدێ ژوورێ</button>
+<p id="count">٠ یاریزان</p>
+<div id="players"></div>
+<div id="hostControls" class="hidden">
+<button onclick="playBtnSound(); startGame();">دەستپێکرنا یاریێ</button>
+</div>
+<p class="small">سەرۆک دێ یاریێ دەست پێ کەت دەما هەمی هەڤال هاتنە ناڤ ژوورێ.</p>
+</section>
 
-    <!-- بەشێ ژوورێ و لێستا یاریزانا -->
-    <div id="room-screen" class="hidden">
-        <h3 id="display-room-code" style="color: #4CAF50;"></h3>
-        <p>هەڤالێن تە یێن د ژوورێ دا:</p>
-        <ul id="players-list"></ul>
-        <button class="btn hidden" id="start-game-btn" onclick="startGame()">دەستپێکرنا یاریێ و دابەشکرنا ڕۆلان</button>
-    </div>
+<section id="game" class="card hidden">
+<h2 id="phaseTitle">ڕۆلێ تە</h2>
+<p id="phaseInfo">کارتێ خۆ ڤەکە و ڕۆلێ خۆ ببینە.</p>
+<div id="roleCard" class="role">🔒 ڕۆلێ خۆ ببینە</div>
+<button id="reveal" onclick="playBtnSound(); revealRole();">نیشاندانا ڕۆلێ من</button>
 
-    <!-- بەشێ نیشاندانا ڕۆلێ نهێنی -->
-    <div id="game-screen" class="hidden">
-        <h2>ڕۆلێ تە یێ نهێنی</h2>
-        <div class="card">
-            <h1 id="my-role" style="font-size: 28px;">---</h1>
-            <p id="my-role-desc">چاڤەڕێ بە...</p>
-        </div>
-    </div>
+<div id="policeControls" class="hidden" style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
+<h3 style="color:#60a5fa; margin:5px 0;">🚔 دەسەڵاتێن پۆلیسی</h3>
+<button class="police-btn" onclick="playBtnSound(); toggleMuteAll(true);">بێدەنگکرنا هەمی یاریزانان 🔇</button>
+<button class="police-btn" style="background:#2563eb;" onclick="playBtnSound(); toggleMuteAll(false);">ڤەکرنا ئاخفتنێ بۆ هەمیان 🎙️</button>
 </div>
 
+<div id="actions" class="hidden">
+<h2>دەنگدان</h2>
+<p>یاریزانەکێ هەلبژێرە بۆ دەنگدان.</p>
+<div id="voteList"></div>
+</div>
+
+<button id="nextPhaseBtn" class="secondary hidden" onclick="playBtnSound(); nextPhase();">گۆڕینا شەڤ / ڕۆژ</button>
+<button class="secondary" onclick="playBtnSound(); location.reload();">دەرکەفتن</button>
+
+<div class="audio-panel">
+<h3>🎙️ بێسیم و ئاخفتن</h3>
+<button id="micBtn" class="secondary" onclick="toggleMic()">چالاککرنا مایکێ 🎤</button>
+<p id="micStatus" class="small">مایک کۆنترۆڵکریە ب بڕیارا پۆلیسی / سەرۆکی</p>
+</div>
+</section>
+</main>
+
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-    import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
 
-    // ڕێکخستنێن Firebase یێن تە[span_1](start_span)[span_1](end_span)
-    const firebaseConfig = {
-        apiKey: "AIzaSyApi9n_0mZM1-ErqnBZTk[span_2](start_span)[span_2](end_span)...", // (ئەو کۆدێ تە گرتى لێرە تەمام بکە ئەگەر کێم هەبوو)
-        authDomain: "mafia-badine.firebaseapp.com[span_3](start_span)"[span_3](end_span),
-        databaseURL: "https://mafia-badine-default-rtdb.firebaseio.com[span_4](start_span)"[span_4](end_span),
-        projectId: "mafia-badine[span_5](start_span)"[span_5](end_span),
-        storageBucket: "mafia-badine.appspot.com",
-        messagingSenderId: "...",
-        appId: "..."
-    };
+const firebaseConfig = {
+    apiKey: "AIzaSyApi9n_0mZM1-ErqnBZTk",
+    authDomain: "mafia-badine.firebaseapp.com",
+    databaseURL: "https://mafia-badine-default-rtdb.firebaseio.com",
+    projectId: "mafia-badine",
+    storageBucket: "mafia-badine.appspot.com",
+    messagingSenderId: "...",
+    appId: "..."
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-    let currentRoom = null;
-    let myName = null;
-    let myId = 'user_' + Math.random().toString(36).substr(2, 9);
+const roles = [
+    ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["سەرۆکێ مافیا","مافیا"], 
+    ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], ["گروپێ هاولاتی","هاولاتی"], 
+    ["دادوەر","هاولاتی"], ["پولیس","هاولاتی"], ["باژێرڤان","هاولاتی"], 
+    ["مێرخاص","هاولاتی"], ["هاولاتیێ سادە","هاولاتی"], ["گورکول","هاولاتی"], 
+    ["ڤەکولەر","هاولاتی"], ["هاولاتیێ بێ دەنک","هاولاتی"], ["هاولاتیێ بومبە","هاولاتی"], 
+    ["کشاف","هاولاتی"], ["نوژدارێ هاولاتیا","هاولاتی"]
+];
 
-    window.createRoom = function() {
-        myName = document.getElementById('player-name').value;
-        if (!myName) {
-            alert('تکایە ناڤێ خۆ بنڤیسە!');
-            return;
+let room = null;
+let me = { id: 'usr_' + Math.random().toString(36).substr(2, 7), name: '', role: null };
+let isHost = false;
+let revealed = false;
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// Sound Generators
+window.playBtnSound = function() {
+    try {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    } catch(e){}
+};
+
+function playRoleSound(roleType) {
+    try {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        if (roleType.includes("مافیا")) {
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.type = 'sawtooth';
+        } else if (roleType.includes("پولیس")) {
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.type = 'square';
+        } else {
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.type = 'triangle';
         }
-        currentRoom = Math.random().toString(36).substr(2, 6).toUpperCase();
-        
-        const roomRef = ref(db, 'rooms/' + currentRoom);
-        set(roomRef, {
-            host: myId,
-            status: 'waiting',
-            players: {
-                [myId]: { name: myName, role: 'چاڤەڕێ' }
-            }
-        }).then(() => {
-            enterRoomUI();
-        });
-    };
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    } catch(e){}
+}
 
-    window.joinRoom = function() {
-        myName = document.getElementById('player-name').value;
-        currentRoom = document.getElementById('room-code-input').value.toUpperCase();
-        if (!myName || !currentRoom) {
-            alert('تکایە ناڤ و کۆدێ ژوورێ بنڤیسە!');
-            return;
+function show(id) {
+    ["home", "lobby", "game"].forEach(x =>
+        document.getElementById(x).classList.toggle("hidden", x !== id)
+    );
+}
+
+function msg(t) { document.getElementById("message").textContent = t; }
+
+function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+window.createRoom = function() {
+    const name = document.getElementById("name").value.trim();
+    if (!name) { msg("سەرەتا ناڤێ خۆ بنڤیسە."); return; }
+    
+    me.name = name;
+    room = String(Math.floor(100000 + Math.random() * 900000));
+    isHost = true;
+
+    const roomRef = ref(db, 'rooms/' + room);
+    set(roomRef, {
+        host: me.id,
+        status: 'lobby',
+        phase: 'شەڤ',
+        globalMute: false,
+        players: {
+            [me.id]: { name: me.name, role: '' }
         }
+    }).then(() => {
+        listenToRoom();
+    });
+};
 
-        const playerRef = ref(db, `rooms/${currentRoom}/players/${myId}`);
-        get(ref(db, `rooms/${currentRoom}`)).then((snapshot) => {
-            if (snapshot.exists()) {
-                set(playerRef, { name: myName, role: 'چاڤەڕێ' }).then(() => {
-                    enterRoomUI();
-                });
-            } else {
-                alert('ڤەژوور یا هەی نەدیت!');
-            }
-        });
-    };
+window.joinRoom = function() {
+    const name = document.getElementById("name").value.trim();
+    const pin = document.getElementById("pinInput").value.trim();
+    if (!name || pin.length !== 6) { msg("ناڤ و کۆدێ ٦ ژمارەیی بنڤیسە."); return; }
 
-    function enterRoomUI() {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('room-screen').classList.remove('hidden');
-        document.getElementById('display-room-code').innerText = "کۆدێ ژوورێ: " + currentRoom;
+    me.name = name;
+    room = pin;
 
-        const roomRef = ref(db, `rooms/${currentRoom}`);
-        onValue(roomRef, (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-
-            // نیشاندانا لیستا یاریزانا
-            const list = document.getElementById('players-list');
-            list.innerHTML = '';
-            const players = data.players || {};
-            
-            let isHost = (data.host === myId);
-            if (isHost && data.status === 'waiting') {
-                document.getElementById('start-game-btn').classList.remove('hidden');
-            }
-
-            Object.keys(players).forEach(id => {
-                let li = document.createElement('li');
-                li.innerText = players[id].name + (id === data.host ? ' (سەرکردێ ژوورێ)' : '');
-                list.appendChild(li);
+    const roomRef = ref(db, 'rooms/' + room);
+    get(roomRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            update(ref(db, `rooms/${room}/players/${me.id}`), {
+                name: me.name,
+                role: ''
+            }).then(() => {
+                listenToRoom();
             });
+        } else {
+            msg("کۆدێ ژوورێ نە دروستە.");
+        }
+    });
+};
 
-            // ئەگەر یاری دەستپێکر، ڕۆلا خۆ ببینە
-            if (data.status === 'playing') {
-                document.getElementById('room-screen').classList.add('hidden');
-                document.getElementById('game-screen').classList.remove('hidden');
-                
-                let myRole = players[myId] ? players[myId].role : 'هاووڵاتی';
-                document.getElementById('my-role').innerText = myRole;
-                if(myRole.includes('مافیا')) {
-                    document.getElementById('my-role-desc').innerText = 'تو مافیا یی! هەڤالێن خۆ ژناڤ ببە ب دزی.';
-                } else {
-                    document.getElementById('my-role-desc').innerText = 'تو هاووڵاتی یی! هەوڵ بدە مافیایان ئاشکرا بکەی.';
+function listenToRoom() {
+    document.getElementById("pinDisplay").textContent = room;
+    const roomRef = ref(db, 'rooms/' + room);
+
+    onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const players = data.players || {};
+        const playerList = Object.keys(players);
+
+        document.getElementById("count").textContent = `${playerList.length} یاریزان`;
+        let html = '';
+        playerList.forEach(id => {
+            let isRoomHost = (id === data.host);
+            html += `<div class="player"><span>${escapeHtml(players[id].name)}</span> ${isRoomHost ? '<small style="color:#ff6579">(سەرۆک)</small>' : ''}</div>`;
+        });
+        document.getElementById("players").innerHTML = html;
+
+        if (isHost) {
+            document.getElementById("hostControls").classList.remove("hidden");
+            document.getElementById("nextPhaseBtn").classList.remove("hidden");
+        }
+
+        // Global Mute control by Police / Host
+        if (data.globalMute && me.role !== "پولیس" && !isHost) {
+            document.getElementById("micBtn").disabled = true;
+            document.getElementById("micStatus").textContent = "🔇 ئاخفتن هاتیە ڕاوەستاندن ب بڕیارا پۆلیسی";
+        } else {
+            document.getElementById("micBtn").disabled = false;
+            document.getElementById("micStatus").textContent = "🎙️ مایک ئامادەیە برای ئاخفتنێ";
+        }
+
+        if (data.status === 'lobby') {
+            show("lobby");
+        } else if (data.status === 'playing') {
+            show("game");
+            if (players[me.id]) {
+                me.role = players[me.id].role;
+                if (me.role === "پولیس" || isHost) {
+                    document.getElementById("policeControls").classList.remove("hidden");
                 }
             }
-        });
-    }
-
-    window.startGame = function() {
-        const roomRef = ref(db, `rooms/${currentRoom}`);
-        get(roomRef).then((snapshot) => {
-            const data = snapshot.val();
-            const players = data.players;
-            const playerIds = Object.keys(players);
             
-            // دابەشکرنا ڕۆلان ب رێژەیەکا تەمام
-            let roles = ['مافیا', 'دکتۆر', 'پۆلیس'];
-            while(roles.length < playerIds.length) {
-                roles.push('هاووڵاتی');
-            }
-            // Shuffle roles
-            roles.sort(() => Math.random() - 0.5);
+            document.getElementById("phaseTitle").textContent = data.phase || "شەڤ";
+            document.getElementById("phaseInfo").textContent = 
+                data.phase === "شەڤ" ? "شەڤ هات؛ ڕۆلێن شەڤێ دەست پێ دکەن." : "ڕۆژ هات؛ گەنگەشە و دەنگدان دەست پێ دکەن.";
+            document.getElementById("actions").classList.toggle("hidden", data.phase === "شەڤ");
+        }
+    });
+}
 
-            let updates = {};
-            updates[`rooms/${currentRoom}/status`] = 'playing';
-            
-            playerIds.forEach((id, index) => {
-                updates[`rooms/${currentRoom}/players/${id}/role`] = roles[index];
-            });
+window.copyPin = function() {
+    if (navigator.clipboard) navigator.clipboard.writeText(room);
+    alert("کۆدێ ژوورێ: " + room);
+};
 
-            update(ref(db), updates);
+window.startGame = function() {
+    get(ref(db, 'rooms/' + room)).then((snapshot) => {
+        const data = snapshot.val();
+        const players = data.players;
+        const playerIds = Object.keys(players);
+
+        let deck = shuffle([...roles]);
+        let updates = {};
+        updates[`rooms/${room}/status`] = 'playing';
+        updates[`rooms/${room}/phase`] = 'شەڤ';
+
+        playerIds.forEach((id, index) => {
+            updates[`rooms/${room}/players/${id}/role`] = deck[index % deck.length][0];
         });
-    };
+
+        update(ref(db), updates);
+    });
+};
+
+window.revealRole = function() {
+    if (!me.role) return;
+    revealed = !revealed;
+    document.getElementById("roleCard").textContent = revealed ? me.role : "🔒 ڕۆلێ خۆ ببینە";
+    document.getElementById("reveal").textContent = revealed ? "شارِتنا ڕۆلێ خۆ" : "نیشاندانا ڕۆلێ من";
+    if (revealed) playRoleSound(me.role);
+};
+
+window.toggleMuteAll = function(status) {
+    update(ref(db, 'rooms/' + room), { globalMute: status });
+};
+
+window.nextPhase = function() {
+    get(ref(db, 'rooms/' + room + '/phase')).then((snapshot) => {
+        let currentPhase = snapshot.val() || "شەڤ";
+        let newPhase = currentPhase === "شەڤ" ? "ڕۆژ" : "شەڤ";
+        update(ref(db, 'rooms/' + room), { phase: newPhase });
+    });
+};
+
+window.toggleMic = function() {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        alert("مایک ب سەرکەفتن هاتە چالاککرن!");
+    }).catch(err => {
+        alert("دەستووریا مایکێ نەهاتە دان.");
+    });
+};
+
+function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
 </script>
-
 </body>
 </html>
