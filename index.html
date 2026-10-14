@@ -42,7 +42,7 @@ button:disabled{opacity:.5}
 <section id="home" class="card">
 <h2>ب خێرهاتی</h2>
 <input id="name" maxlength="20" placeholder="ناڤێ تە">
-<button onclick="playBtnSound(); createRoom();">دروستکرنا ژوورێ</button>
+<button onclick="playBtnSound(); createRoom();">دروستکرنا ژوورەکێ نوو</button>
 <hr style="border-color:#48212d">
 <input id="pinInput" maxlength="6" inputmode="numeric" placeholder="کۆدێ ژوورێ PIN">
 <button class="secondary" onclick="playBtnSound(); joinRoom();">چوونا ژوورێ</button>
@@ -101,8 +101,8 @@ const firebaseConfig = {
     databaseURL: "https://mafia-badine-default-rtdb.firebaseio.com",
     projectId: "mafia-badine",
     storageBucket: "mafia-badine.appspot.com",
-    messagingSenderId: "...",
-    appId: "..."
+    messagingSenderId: "38192840192",
+    appId: "1:38192840192:web:abcdef123456"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -121,11 +121,17 @@ let room = null;
 let me = { id: 'usr_' + Math.random().toString(36).substr(2, 7), name: '', role: null };
 let isHost = false;
 let revealed = false;
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let audioCtx = null;
 
-// Sound Generators
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
 window.playBtnSound = function() {
     try {
+        initAudio();
         let osc = audioCtx.createOscillator();
         let gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -141,6 +147,7 @@ window.playBtnSound = function() {
 
 function playRoleSound(roleType) {
     try {
+        initAudio();
         let osc = audioCtx.createOscillator();
         let gain = audioCtx.createGain();
         if (roleType.includes("مافیا")) {
@@ -197,6 +204,8 @@ window.createRoom = function() {
         }
     }).then(() => {
         listenToRoom();
+    }).catch((error) => {
+        msg("خەلەتی د دروستکرنا ژوورێ دا: " + error.message);
     });
 };
 
@@ -220,6 +229,8 @@ window.joinRoom = function() {
         } else {
             msg("کۆدێ ژوورێ نە دروستە.");
         }
+    }).catch((error) => {
+        msg("خەلەتی د چوونا ژوورێ دا: " + error.message);
     });
 };
 
@@ -247,7 +258,6 @@ function listenToRoom() {
             document.getElementById("nextPhaseBtn").classList.remove("hidden");
         }
 
-        // Global Mute control by Police / Host
         if (data.globalMute && me.role !== "پولیس" && !isHost) {
             document.getElementById("micBtn").disabled = true;
             document.getElementById("micStatus").textContent = "🔇 ئاخفتن هاتیە ڕاوەستاندن ب بڕیارا پۆلیسی";
