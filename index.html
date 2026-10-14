@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>یارییا مافیا بادینی</title>
+<!-- Firebase SDKs (Classic Scripts - No Module Error) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <style>
 :root{--red:#e63950;--bg:#0b090d;--panel:#19131a}
 *{box-sizing:border-box}
@@ -59,7 +63,7 @@ button:disabled{opacity:.5}
 <div id="hostControls" class="hidden">
 <button onclick="playBtnSound(); startGame();">دەستپێکرنا یاریێ</button>
 </div>
-<p class="small">سەرۆک دێ یاریێ دەست پێ کەت.</p>
+<p class="small">سەرۆک دێ یاریێ دەست پێ کەت دەما هەمی هەڤال هاتنە ناڤ ژوورێ.</p>
 </section>
 
 <section id="game" class="card hidden">
@@ -86,6 +90,21 @@ button:disabled{opacity:.5}
 </main>
 
 <script>
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyApi9n_0mZM1-ErqnBZTk",
+    authDomain: "mafia-badine.firebaseapp.com",
+    databaseURL: "https://mafia-badine-default-rtdb.firebaseio.com",
+    projectId: "mafia-badine",
+    storageBucket: "mafia-badine.appspot.com",
+    messagingSenderId: "38192840192",
+    appId: "1:38192840192:web:abcdef123456"
+};
+
+// Initialize Firebase Classic
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 const roles = [
     ["مافیێ سادە","مافیا"], ["مافیێ فێلباز","مافیا"], ["سەرۆکێ مافیا","مافیا"], 
     ["شاە کوژ","مافیا"], ["نوژدارێ مافیا","مافیا"], ["گروپێ هاولاتی","هاولاتی"], 
@@ -168,16 +187,20 @@ window.createRoom = function() {
     room = String(Math.floor(100000 + Math.random() * 900000));
     isHost = true;
 
-    let roomData = {
+    const roomRef = db.ref('rooms/' + room);
+    roomRef.set({
         host: me.id,
         status: 'lobby',
         phase: 'شەڤ',
         globalMute: false,
-        players: { [me.id]: { name: me.name, role: '' } }
-    };
-
-    localStorage.setItem('mafia_room_' + room, JSON.stringify(roomData));
-    openLobby();
+        players: {
+            [me.id]: { name: me.name, role: '' }
+        }
+    }).then(() => {
+        listenToRoom();
+    }).catch(err => {
+        msg("خەلەتی: " + err.message);
+    });
 };
 
 window.joinRoom = function() {
@@ -185,59 +208,75 @@ window.joinRoom = function() {
     const pin = document.getElementById("pinInput").value.trim();
     if (!name || pin.length !== 6) { msg("ناڤ و کۆدێ ٦ ژمارەیی بنڤیسە."); return; }
 
-    let raw = localStorage.getItem('mafia_room_' + pin);
-    if (!raw) { msg("کۆدێ ژوورێ نە هاتە دیتن."); return; }
-
-    let roomData = JSON.parse(raw);
     me.name = name;
     room = pin;
 
-    roomData.players[me.id] = { name: me.name, role: '' };
-    localStorage.setItem('mafia_room_' + room, JSON.stringify(roomData));
-    openLobby();
+    const roomRef = db.ref('rooms/' + room);
+    roomRef.once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+            db.ref(`rooms/${room}/players/${me.id}`).set({
+                name: me.name,
+                role: ''
+            }).then(() => {
+                listenToRoom();
+            });
+        } else {
+            msg("کۆدێ ژوورێ نە داتابێسێ دا نەهاتە دیتن.");
+        }
+    }).catch(err => {
+        msg("خەلەتی: " + err.message);
+    });
 };
 
-function openLobby() {
+function listenToRoom() {
     document.getElementById("pinDisplay").textContent = room;
     show("lobby");
-    
-    setInterval(updateLobbyData, 1000);
-}
 
-function updateLobbyData() {
-    if (!room) return;
-    let raw = localStorage.getItem('mafia_room_' + room);
-    if (!raw) return;
-    let data = JSON.parse(raw);
+    const roomRef = db.ref('rooms/' + room);
+    roomRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
 
-    const players = data.players || {};
-    const playerList = Object.keys(players);
+        const players = data.players || {};
+        const playerList = Object.keys(players);
 
-    document.getElementById("count").textContent = `${playerList.length} یاریزان`;
-    let html = '';
-    playerList.forEach(id => {
-        let isRoomHost = (id === data.host);
-        html += `<div class="player"><span>${escapeHtml(players[id].name)}</span> ${isRoomHost ? '<small style="color:#ff6579">(سەرۆک)</small>' : ''}</div>`;
-    });
-    document.getElementById("players").innerHTML = html;
+        document.getElementById("count").textContent = `${playerList.length} یاریزان`;
+        let html = '';
+        playerList.forEach(id => {
+            let isRoomHost = (id === data.host);
+            html += `<div class="player"><span>${escapeHtml(players[id].name)}</span> ${isRoomHost ? '<small style="color:#ff6579">(سەرۆک)</small>' : ''}</div>`;
+        });
+        document.getElementById("players").innerHTML = html;
 
-    if (isHost) {
-        document.getElementById("hostControls").classList.remove("hidden");
-        document.getElementById("nextPhaseBtn").classList.remove("hidden");
-    }
-
-    if (data.status === 'playing') {
-        show("game");
-        if (players[me.id]) {
-            me.role = players[me.id].role;
-            if (me.role === "پولیس" || isHost) {
-                document.getElementById("policeControls").classList.remove("hidden");
-            }
+        if (isHost) {
+            document.getElementById("hostControls").classList.remove("hidden");
+            document.getElementById("nextPhaseBtn").classList.remove("hidden");
         }
-        document.getElementById("phaseTitle").textContent = data.phase || "شەڤ";
-        document.getElementById("phaseInfo").textContent = 
-            data.phase === "شەڤ" ? "شەڤ هات؛ ڕۆلێن شەڤێ دەست پێ دکەن." : "ڕۆژ هات؛ گەنگەشە دەست پێ دکەت.";
-    }
+
+        if (data.globalMute && me.role !== "پولیس" && !isHost) {
+            document.getElementById("micBtn").disabled = true;
+            document.getElementById("micStatus").textContent = "🔇 ئاخفتن هاتیە ڕاوەستاندن";
+        } else {
+            document.getElementById("micBtn").disabled = false;
+            document.getElementById("micStatus").textContent = "🎙️ مایک ئامادەیە";
+        }
+
+        if (data.status === 'lobby') {
+            show("lobby");
+        } else if (data.status === 'playing') {
+            show("game");
+            if (players[me.id]) {
+                me.role = players[me.id].role;
+                if (me.role === "پولیس" || isHost) {
+                    document.getElementById("policeControls").classList.remove("hidden");
+                }
+            }
+            
+            document.getElementById("phaseTitle").textContent = data.phase || "شەڤ";
+            document.getElementById("phaseInfo").textContent = 
+                data.phase === "شەڤ" ? "شەڤ هات؛ ڕۆلێن شەڤێ دەست پێ دکەن." : "ڕۆژ هات؛ گەنگەشە دەست پێ دکەت.";
+        }
+    });
 }
 
 window.copyPin = function() {
@@ -246,21 +285,22 @@ window.copyPin = function() {
 };
 
 window.startGame = function() {
-    let raw = localStorage.getItem('mafia_room_' + room);
-    if (!raw) return;
-    let data = JSON.parse(raw);
-    const players = data.players;
-    const playerIds = Object.keys(players);
+    db.ref('rooms/' + room).once('value').then((snapshot) => {
+        const data = snapshot.val();
+        const players = data.players;
+        const playerIds = Object.keys(players);
 
-    let deck = shuffle([...roles]);
-    data.status = 'playing';
-    data.phase = 'شەڤ';
+        let deck = shuffle([...roles]);
+        let updates = {};
+        updates[`rooms/${room}/status`] = 'playing';
+        updates[`rooms/${room}/phase`] = 'شەڤ';
 
-    playerIds.forEach((id, index) => {
-        players[id].role = deck[index % deck.length][0];
+        playerIds.forEach((id, index) => {
+            updates[`rooms/${room}/players/${id}/role`] = deck[index % deck.length][0];
+        });
+
+        db.ref().update(updates);
     });
-
-    localStorage.setItem('mafia_room_' + room, JSON.stringify(data));
 };
 
 window.revealRole = function() {
@@ -272,19 +312,15 @@ window.revealRole = function() {
 };
 
 window.toggleMuteAll = function(status) {
-    let raw = localStorage.getItem('mafia_room_' + room);
-    if (!raw) return;
-    let data = JSON.parse(raw);
-    data.globalMute = status;
-    localStorage.setItem('mafia_room_' + room, JSON.stringify(data));
+    db.ref('rooms/' + room).update({ globalMute: status });
 };
 
 window.nextPhase = function() {
-    let raw = localStorage.getItem('mafia_room_' + room);
-    if (!raw) return;
-    let data = JSON.parse(raw);
-    data.phase = data.phase === "شەڤ" ? "ڕۆژ" : "شەڤ";
-    localStorage.setItem('mafia_room_' + room, JSON.stringify(data));
+    db.ref('rooms/' + room + '/phase').once('value').then((snapshot) => {
+        let currentPhase = snapshot.val() || "شەڤ";
+        let newPhase = currentPhase === "شەڤ" ? "ڕۆژ" : "شەڤ";
+        db.ref('rooms/' + room).update({ phase: newPhase });
+    });
 };
 
 window.toggleMic = function() {
