@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>یارییا مافیا</title>
+<style>
+:root{--red:#e63950;--bg:#0b090d;--panel:#19131a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#35111d,var(--bg) 65%);color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:18px}
+main{max-width:480px;margin:auto}
+header{text-align:center;padding:24px 0}
+.logo{font-size:48px}
+h1{color:#ff526b;margin:10px 0}
+p{color:#c9bbc4;line-height:1.7}
+.card{background:#19131a;border:1px solid #48212d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 10px 30px #0005}
+h2{font-size:19px}
+input,button,select{width:100%;padding:14px;border-radius:10px;margin:6px 0;font-size:16px}
+input,select{background:#0c0a0e;color:white;border:1px solid #59313d}
+button{border:0;background:var(--red);color:white;font-weight:bold;cursor:pointer}
+button.secondary{background:#34232c;border:1px solid #69404b}
+button:disabled{opacity:.5}
+.hidden{display:none!important}
+.pin{font-size:30px;letter-spacing:5px;color:#ff6579;text-align:center;font-weight:bold}
+.player{padding:10px;background:#241922;border-radius:9px;margin:7px 0}
+.role{font-size:26px;color:#ff6579;text-align:center;padding:22px 8px}
+.small{font-size:13px;color:#a99aa4}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="logo">🎭</div>
+<h1>یارییا مافیا</h1>
+<p>ژوورێ تایبەت • ڕۆلێن نهێنی • یارییا هەڤالان</p>
+</header>
+
+<section id="home" class="card">
+<h2>ب خێرهاتی</h2>
+<input id="name" maxlength="20" placeholder="ناڤێ تە">
+<button onclick="createRoom()">دروستکرنا ژوورێ</button>
+<hr style="border-color:#48212d">
+<input id="pinInput" maxlength="6" inputmode="numeric" placeholder="کۆدێ ژوورێ PIN">
+<button class="secondary" onclick="joinRoom()">چوونا ژوورێ</button>
+<p id="message"></p>
+</section>
+
+<section id="lobby" class="card hidden">
+<h2>ژوورا مافیا</h2>
+<p>کۆدێ ژوورێ:</p>
+<div class="pin" id="pinDisplay"></div>
+<button class="secondary" onclick="copyPin()">کۆپی کرنا کۆدێ ژوورێ</button>
+<p id="count"></p>
+<div id="players"></div>
+<div id="hostControls">
+<label>ژمارا یاریزانان</label>
+<select id="maxPlayers">
+<option value="8">٨ یاریزان</option>
+<option value="9">٩ یاریزان</option>
+<option value="10">١٠ یاریزان</option>
+<option value="11">١١ یاریزان</option>
+<option value="12">١٢ یاریزان</option>
+<option value="13">١٣ یاریزان</option>
+<option value="14">١٤ یاریزان</option>
+<option value="15">١٥ یاریزان</option>
+</select>
+<button onclick="startGame()">دەستپێکرنا یاریێ</button>
+</div>
+<p class="small">تێبینی: ئەڤ نموونەیە تەنێ ل هەمان وێبسایت و ئامێرێ کار دکەت؛ ژوورێن ئۆنلاین پێدڤی ب Firebase هەنە.</p>
+</section>
+
+<section id="game" class="card hidden">
+<h2 id="phaseTitle">ڕۆلێ تە</h2>
+<p id="phaseInfo">کارتێ خۆ ڤەکە و ڕۆلێ خۆ ببینە.</p>
+<div id="roleCard" class="role">🔒 ڕۆلێ خۆ ببینە</div>
+<button id="reveal" onclick="revealRole()">نیشاندانا ڕۆلێ من</button>
+<div id="actions" class="hidden">
+<h2>دەنگدان</h2>
+<p>یاریزانەکێ هەلبژێرە بۆ دەنگدان.</p>
+<div id="voteList"></div>
+</div>
+<button class="secondary" onclick="nextPhase()">گۆڕینا شەڤ / ڕۆژ</button>
+<button class="secondary" onclick="location.reload()">دەرکەفتن</button>
+</section>
+</main>
+
+<script>
+const roles=[
+["مافیێ سادە","مافیا"],["مافیێ فێلباز","مافیا"],
+["سەرۆکێ مافیا","مافیا"],["شاە کوژ","مافیا"],
+["نوژدارێ مافیا","مافیا"],["گروپێ هاولاتی","هاولاتی"],
+["دادوەر","هاولاتی"],["پولیس","هاولاتی"],
+["باژێرڤان","هاولاتی"],["مێرخاص","هاولاتی"],
+["هاولاتیێ سادە","هاولاتی"],["گورکول","هاولاتی"],
+["ڤەکولەر","هاولاتی"],["هاولاتیێ بێ دەنک","هاولاتی"],
+["هاولاتیێ بومبە","هاولاتی"],["کشاف","هاولاتی"],
+["نوژدارێ هاولاتیا","هاولاتی"]
+];
+
+let room=null,me=null,isHost=false,revealed=false,phase="شەڤ";
+
+function show(id){
+ ["home","lobby","game"].forEach(x=>
+ document.getElementById(x).classList.toggle("hidden",x!==id));
+}
+function msg(t){document.getElementById("message").textContent=t}
+function shuffle(a){
+ for(let i=a.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [a[i],a[j]]=[a[j],a[i]];
+ }
+ return a;
+}
+function createRoom(){
+ const name=document.getElementById("name").value.trim();
+ if(!name){msg("سەرەتا ناڤێ خۆ بنڤیسە.");return}
+ room=String(Math.floor(100000+Math.random()*900000));
+ me={name,role:null,alive:true};
+ isHost=true;
+ sessionStorage.setItem("mafia_demo",JSON.stringify({room,me,isHost}));
+ openLobby();
+}
+function joinRoom(){
+ const name=document.getElementById("name").value.trim();
+ const pin=document.getElementById("pinInput").value.trim();
+ if(!name||pin.length!==6){msg("ناڤ و کۆدێ ٦ ژمارەیی بنڤیسە.");return}
+ const saved=sessionStorage.getItem("mafia_demo");
+ if(!saved){msg("ئەڤ نموونەیە ژوورێن ئامێرێن جودا پشتیڤانی ناکەت. بۆ ئۆنلاین Firebase پێدڤییە.");return}
+ const data=JSON.parse(saved);
+ if(data.room!==pin){msg("کۆدێ ژوورێ نە دروستە.");return}
+ msg("بۆ دابەشکرنا ڕۆلان، سەرۆک دڤێت یاریێ دەست پێ بکەت.");
+}
+function openLobby(){
+ document.getElementById("pinDisplay").textContent=room;
+ document.getElementById("count").textContent="١ یاریزان";
+ document.getElementById("players").innerHTML=
+ '<div class="player">'+escapeHtml(me.name)+' (سەرۆک)</div>';
+ show("lobby");
+}
+function escapeHtml(s){
+ return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function copyPin(){
+ if(navigator.clipboard)navigator.clipboard.writeText(room);
+ alert("کۆدێ ژوورێ: "+room);
+}
+function startGame(){
+ const n=Number(document.getElementById("maxPlayers").value);
+ const deck=shuffle([...roles]);
+ me.role=deck[0];
+ revealed=false;
+ document.getElementById("roleCard").textContent="🔒 ڕۆلێ خۆ ببینە";
+ document.getElementById("reveal").classList.remove("hidden");
+ document.getElementById("actions").classList.add("hidden");
+ document.getElementById("phaseTitle").textContent="ڕۆلێ تە";
+ document.getElementById("phaseInfo").textContent=
+ "ئەم نموونەیە ڕۆلێ خۆ تەنێ بۆ یاریزانێ سەرۆک نیشان ددەت. ژمارا هەلبژێری: "+n;
+ show("game");
+}
+function revealRole(){
+ if(!me?.role)return;
+ revealed=!revealed;
+ document.getElementById("roleCard").textContent=
+ revealed?me.role[0]:"🔒 ڕۆلێ خۆ ببینە";
+ document.getElementById("reveal").textContent=
+ revealed?"شارِتنا ڕۆلێ خۆ":"نیشاندانا ڕۆلێ من";
+}
+function nextPhase(){
+ phase=phase==="شەڤ"?"ڕۆژ":"شەڤ";
+ document.getElementById("phaseTitle").textContent=phase;
+ document.getElementById("phaseInfo").textContent=
+ phase==="شەڤ"?"شەڤ هات؛ ڕۆلێن شەڤێ دەست پێ دکەن.":"ڕۆژ هات؛ گەنگەشە و دەنگدان دەست پێ دکەن.";
+ document.getElementById("actions").classList.toggle("hidden",phase==="شەڤ");
+}
+</script>
+</body>
+</html>
